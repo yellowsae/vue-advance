@@ -96,11 +96,7 @@ new Vue({
 
 当使用单文件组件文件，替换初始化文件
 
-<img src="../../../AppData/Roaming/Typora/typora-user-images/image-20211019164045390.png" alt="image-20211019164045390" style="zoom:50%;" />
-
-
-
-
+<img src="https://gitee.com/yunhai0644/imghub/raw/master/20211020000912.png" alt="image-20211019164045390" style="zoom:50%;" />
 
 
 
