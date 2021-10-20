@@ -1,13 +1,12 @@
 <template>
     <div class='deom'>
-        <h2 @click='showInfo'>学校名称： {{name}}</h2>
+        <h2>学校名称： {{name}}</h2>
         <h2>学校地点: {{address}}</h2>
+        <button @click="change">点我切换学校名</button>
     </div>
 </template>
 
 <script>
-    // import {hunhe, hunhe2} from '../mixin.js';
-
     // 逻辑
     export default {
         name: "School",  // 组件的名字， 一般和文件名相同
@@ -17,9 +16,11 @@
                 address: 'SchoolAddress'
             }
         },
-
-        // 引入混合模块 , 局部混合 
-        // mixins: [hunhe, hunhe2]
+        methods: {
+            change() {
+                this.name = '点我切换学校名'
+            }
+            }
     }
 </script>
 

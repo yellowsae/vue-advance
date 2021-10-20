@@ -270,7 +270,378 @@ export default {
 
 
 
+## props配置 
 
+为了提高代码的复用，在组件中的可以使用 `props` 对组件的参数自定义 
+
+
+
+
+
+### 为什么要使用 `props`  ?
+
+在`App`组件中使用`student` 组件， 并且 `student` 的数据需要动态变化 。 
+
+```vue
+<template>
+    <div>
+        <h2 v-text='msg' ref='title'></h2>
+
+        <!-- 张三的学生的信息  -->
+        <student ref='student'></student>
+
+        <!-- 李四学生的信息 -->
+        <student ref='student'></student>
+    </div>
+</template>
+```
+
+<img src="https://gitee.com/yunhai0644/imghub/raw/master/20211020113251.png" alt="image-20211020113241692" style="zoom:50%;" />
+
+出现的问题 ：  数据不会改变， 在`student` 组件中，数据是被写死的， 这样代码虽然复用，但是数据不是动态的 
+
+
+
+**在vc中props的显示** ：  
+
+直接出现在 组件对象的实例上， 在组件实例对象上可以直接使用它们 ，`this.xxx` ,  它们是可读的，修改会发生bug
+
+<img src="https://gitee.com/yunhai0644/imghub/raw/master/20211020130018.png" alt="image-20211020125720639" style="zoom:50%;" />
+
+
+
+### 使用 `props`
+
+为了提高代码的复用，在组件中的可以使用 `props` 对组件的参数自定义 ， 在单个**组件中**需要使用到 props 。
+
+**在组件中定义**
+
+```js
+export default {
+    name: 'Student',
+    // data() {
+    //     return {
+    //         name: this.name,
+    //         sex: this.sex,
+    //         age: this.age,
+    //     }
+    // },
+
+    // 第一种使用方法：  简单定义 
+    props: ['name', 'sex', 'age'],
+    
+    // 第二种使用方法 : 限制类型 
+    props: {
+        name: String,
+        sex: String,
+        age: Number
+    },
+    
+    // 第三种使用方法： （限制类型， 限制必要性， 指定默认值 ）
+    props: {
+        name: {
+            type: String,		// 类型
+            required: true,		// 需要性
+            default: '老王'   // 默认值
+        }
+    }
+}
+```
+
+**使用组件时** 
+
+```vue
+// App.vue
+<template>
+    <div>
+        <h2 v-text='msg' ref='title'></h2>
+        <!-- 需要写上在该组件props中定义的  name, sex  age    -->
+        <!-- 张三的学生的信息  -->
+        <student ref='student' name='张三' sex='男' :age='18'></student>
+        <!-- 李四学生的信息 -->
+        <student ref='student' name='李四' sex='女' :age='20'></student>
+    </div>
+</template>
+```
+
+> 这里定义Number类型的age，需要设置为 `v-bind:age='18'` 或者 `:age='18'` ， 才能转为 Number 类型
+
+
+
+
+
+### 需求绑定事件让age+1 
+
+代码如下: 
+
+```js
+// Student.app
+    export default {
+        name: 'Student',
+        props: {
+            name: {
+                type: String,
+                required: true,
+            },
+            sex: {  // required 必要值，在定义组件标签时， 必须要定义的属性
+                type: String,
+                required: true,
+            },
+            age: {  // 当没有设置age时候，使用 default
+                type: Number,
+                default: 99
+            }
+        },
+
+        methods: {
+            add() {
+                this.age++;
+            }
+        }
+    }
+```
+
+出现的问题： 
+
+![image-20211020120029763](https://gitee.com/yunhai0644/imghub/raw/master/20211020120031.png)
+
+
+
+> 原因 ： 虽然能够实现age+1 , 但是出现bug， 因为props是**只读**的， Vue底层会监视你对props的修改， 如果进行了修改， 就会发出警告，若业务需求确实需要修改， 那么请复制一份props的内容，到 data 中， 然后去修改data中的数据 
+
+解决： 
+
+```vue
+<script>
+    export default {
+        name: 'Student',
+        data() {
+            return {
+                MyAge: this.age,   // 定义 MyAge 为 props中的this , 然后修改它就不会发生报错
+            }
+        },
+        props: {
+            name: {
+                type: String,
+                required: true,
+            },
+            sex: {  // required 必要值，在定义组件标签时， 必须要定义的属性
+                type: String,
+                required: true,
+            },
+            age: {  // 当没有设置age时候，使用 default
+                type: Number,
+                default: 99
+            }
+        },
+
+        methods: {
+            add() {
+                this.MyAge++;
+                console.log(this)
+            }
+        }
+    }
+</script>
+```
+
+
+
+**小结** 配置 `props `
+
+功能： 让组件接收外部传过来的数据 
+
+接收数据方法 ： 
+
+```js
+    // 第一种使用方法：  简单定义 
+    props: ['name', 'sex', 'age'],
+    
+    // 第二种使用方法 : 限制类型 
+    props: {
+        name: String,
+        sex: String,
+        age: Number
+    },
+    
+    // 第三种使用方法： （限制类型， 限制必要性， 指定默认值 ）
+    props: {
+        name: {
+            type: String,		// 类型
+            required: true,		// 需要性
+            default: '老王'   // 默认值
+        }
+    }
+```
+
+备注：   因为props是**只读**的， `Vue`底层会监视你对props的修改， 如果进行了修改， 就会发出警告，若业务需求确实需要修改， 那么请复制一份props的内容，到 data 中， 然后去修改data中的数据 
+
+
+
+
+
+
+
+
+
+
+
+## mixin混合
+
+当多个组件具有相同的配置文件时候，可以定义一个 `xxx.js` 的混合文件，通过引入，在配置中使用混合的配置项，可以达到配置的复用 
+
+
+
+例如 ：  具有相同的配置
+
+```js
+// Student.vue
+methods: {
+    showInfo() {
+        alert(this.name)
+    }
+}
+
+// School.vue 
+methods: {
+    showInfo() {
+        alert(this.name)
+    }
+}
+```
+
+
+
+### **实现复用**
+
+```js
+// mixin.js   混合文件 
+export const hunhe = {
+    methods: {
+        showInfo() {
+            alert(this.name)
+        }
+    }
+}
+```
+
+```vue
+// School.vue
+<script>
+    // 引入混合文件 
+    import {hunhe} from '../mixin.js';
+    export default {
+        name: "School",  // 组件的名字， 一般和文件名相同
+        data() { 
+            return {
+                name: "SchoolName",
+                address: 'SchoolAddress'
+            }
+        },
+        // 使用混合模块 
+        mixins: [hunhe]
+    }
+</script>
+
+
+// Student.vue
+<script>
+    // 引入混合的配置文件 
+    import {hunhe} from '../mixin.js'
+    export default {
+        name: 'Student',
+        data() {
+            return {
+                name: "Yellowsea",
+                sex: "男"
+            }
+        },
+        // 使用混合文件 
+        mixins: [hunhe]
+    }
+</script>
+```
+
+
+
+所以具有相同的配置项， 要使用混合 `mixins` 
+
+
+
+### 全局复用
+
+```js
+// mixin.js
+export const hunhe = {
+    methods: {
+        showInfo() {
+            alert(this.name)
+        }
+    }
+}
+// 多个混合模块 
+export const hunhe2 = {
+    // 定义数据
+    data() {
+        return {
+            x: 1,
+            y: 2
+        }
+    },
+    mounted() {
+        console.log('@' + "你好啊")
+    }
+}
+```
+
+```js
+// main.js 入口文件 
+// 引入混合组件
+import { hunhe, hunhe2 } from './mixin.js';
+// 全局使用混合 
+Vue.mixin(hunhe)
+Vue.mixin(hunhe2)
+```
+
+
+
+所有的`vc` 都具有`mixin.js` 中的方法 
+
+<img src="https://gitee.com/yunhai0644/imghub/raw/master/20211020135103.png" alt="image-20211020135052713" style="zoom:50%;" />
+
+<img src="https://gitee.com/yunhai0644/imghub/raw/master/20211020135131.png" alt="image-20211020135124375" style="zoom:50%;" />
+
+
+
+具有四个vc输入四次 `@` ,  在每个vc中都具有 `data() ` 中的数据 
+
+
+
+**小结** `mixin(混入)`
+
+功能： 可以把多个组件共用的配置提取成一个混入对象
+
+使用方法 ： 
+
+1. 第一步 ， 定义混合 例如 
+
+   ```js
+   export const _mixin = {
+       data(){},
+       methods: {} 
+   }
+   ```
+
+2. 使用混入 
+
+   ```js
+   // 全局混入， 在main.js中
+   //导入混合文件
+   Vue.mixin(xxx)
+   
+   //局部混入 
+   mixins: ['xxx']
+   ```
 
 
 
