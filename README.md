@@ -649,3 +649,202 @@ Vue.mixin(hunhe2)
 
 
 
+
+
+## 	Vue中的插件
+
+插件的使用 
+
+```js
+// plug.js
+// 自定义插件是一个 js文件， 
+export default pulg = {  // 保留对象
+    install(Vue,option) {
+        //1. 添加全局过滤器 
+        Vue.filter(xxxx);
+        //2. 添加全局指令 
+        Vue.directive(xxx);
+        //3. 配置全局混入
+        Vue.mixin(xxx);
+        //4, 添加实例对象方法 
+        Vue.prototype.$myMethod = function () {xxx};
+        Vue.prototype.$myProperty  = xxx;
+    }
+}
+```
+
+```js
+// main.js 
+// 引入插件 
+import plug from './plug'
+Vue.use(plug);
+```
+
+
+
+
+
+**在组件中使用plug的方法**
+
+```vue
+//School.vue
+<template>
+    <div class='deom'>
+        
+        <!-- 使用过滤器 -->
+        <h2>学校名称： {{name | MySlice}}</h2>
+        <h2>学校地点: {{address}}</h2>
+        <!-- 在pulg 中的方法 -->
+        <button @click='showInfo'>点我查看信息</button>
+    </div>
+</template>
+
+<script>
+    export default {
+        name: "School",  
+        data() { 
+            return {
+                name: "SchoolName",
+                address: 'SchoolAddress'
+            }
+        },
+        methods: {
+            showInfo() {
+                // 在vm原型中的函数，
+                this.$showMsg()
+            }
+        }
+    }
+</script>
+```
+
+```vue
+// Student.vue
+<template>
+    <div>
+        <h2>学生姓名： {{name}}</h2>
+        <h2>学生的性别: {{sex}}</h2>
+
+        <!-- 使用 plug 中的数据  -->
+        <input type="text" v-fbind:value="name">
+        <button @click='showInfo'>查看原型上的信息</button>
+    </div>
+</template>
+
+<script>
+    export default {
+        name: 'Student',
+        data() {
+            return {
+                name: "Yellowsea",
+                sex: "男"
+            }
+        },
+        methods: {
+            showInfo() {
+                // 找到plug 定义的数据 
+                alert(this.$myProperty)
+            }
+        }
+    }
+</script>
+```
+
+
+
+**总结**
+
+功能： 用于增强Vue 
+
+本质 ： 包含`install` 方法的一个对象，`install` 的第一个参数是`Vue` , 第二个以后的参数是插件使用者传递的数据 ，
+
+自定义插件： 
+
+```js
+// 自定义插件是一个 js文件， 
+export default pulg = {  // 保留对象
+    install(Vue,option) {
+        //1. 添加全局过滤器 
+        Vue.filter(xxxx);
+        //2. 添加全局指令 
+        Vue.directive(xxx);
+        //3. 配置全局混入
+        Vue.mixin(xxx);
+        //4, 添加实例对象方法 
+        Vue.prototype.$myMethod = function () {xxx};
+        Vue.prototype.$myProperty  = xxx;
+    }
+}
+```
+
+使用插件 ： 
+
+```js
+// 在`main.js` 引入插件 
+//使用插件
+Vue.use(plug);
+```
+
+
+
+
+
+## scoped样式
+
+作用： 让样式在局部生效，防止冲入 
+写法 ： `<style scoped></style>`
+
+示例 ： 
+
+```vue
+// Student.vue 
+<style>
+    .demo {
+        background-color:pink;
+    }
+</style>
+
+
+
+// School.vue 
+<style>
+    .deom {
+        background-color: orange;
+    }
+</style>
+```
+
+`Vue`组件中的`<style>`  最后都会整合成一个 style样式表，就会出现多个组件中具有相同的类名，为了避免出现者样的情况，在组件文件中加上 `<style scoped>`  避免冲突。 (当出现冲突时候，根据引入组件的先后顺序使用样式)
+
+
+
+解决样式的冲突 ： `<style scoped>`  表示该组件样式，只服务于该组件。 
+
+```vue
+<style scoped>
+    .deom {
+        background-color: orange;
+    }
+</style>
+```
+
+`Vue`使用`scoped` 解决冲突的原理 ： 生成一串随机的数字作为标签，修改绑定样式的标签
+
+<img src="https://gitee.com/yunhai0644/imghub/raw/master/20211020155736.png" alt="image-20211020155727904" style="zoom:50%;" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

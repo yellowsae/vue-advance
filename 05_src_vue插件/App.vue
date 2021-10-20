@@ -1,5 +1,6 @@
 <template>
     <div>
+        <h2 v-text='msg' ref='title'></h2>
         <School/>
         <Student/>
     </div>
@@ -13,10 +14,11 @@
         components: {
             School,
             Student
-        }
+        },
+        data(){
+            return {
+                msg: 'Hello Vue'
+            }
+        },
     }
 </script>
-
-<style scoped>
-    
-</style>

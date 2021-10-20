@@ -1,8 +1,10 @@
 <template>
     <div class='deom'>
-        <h2>学校名称： {{name}}</h2>
+        <!-- 使用过滤器 -->
+        <h2>学校名称： {{name | MySlice}}</h2>
         <h2>学校地点: {{address}}</h2>
-
+        <!-- 在pulg 中的方法 -->
+        <button @click='showInfo'>点我查看信息</button>
     </div>
 </template>
 
@@ -16,11 +18,15 @@
             }
         },
         methods: {
+            showInfo() {
+                // 在vm原型中的函数，
+                this.$showMsg()
+            }
         }
     }
 </script>
 
-<style scoped>
+<style>
     .deom {
         background-color: orange;
     }
