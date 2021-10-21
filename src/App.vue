@@ -19,7 +19,7 @@
                 :todos='todos'
                 :checkAllTotal='checkAllTotal'
                 :clearAllTotal='clearAllTotal'
-                />
+            />
         </div>
     </div>
     </div>

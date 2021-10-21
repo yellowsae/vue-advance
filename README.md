@@ -840,6 +840,407 @@ Vue.use(plug);
 
 
 
+## TodoList 案例
+
+
+
+实现效果 
+
+- 添加事件 / 删除事件 
+- 全选 / 取消全选 
+- 统计的完成事件
+- 清除完成功能 
+
+<img src="https://gitee.com/yunhai0644/imghub/raw/master/20211021104824.png" alt="image-20211021104810700" style="zoom:67%;" />
+
+
+
+### 实现代码
+
+页面分为三个组件，  `MyHeader` `MyList` `      MyFooter` ,   在 `MyList`在包含一个`Item` 组件 和它们的管理组件 `App`。 样式省略 
+
+
+
+*App.vue*
+
+在App中需要给它管理的组件下发数据，所以是在App中定义数据的， 对App所管理的组件进行交互， 比如添加，删除等， 也会组件传上来的数据进行处理 
+
+```vue
+<template>
+<div id="root">
+    <div class="todo-container">
+        <div class="todo-wrap">
+            <!-- 并且使用 :receive 的形式， 不然props接收到的不是表达式， 而是字符串   -->
+            <!-- :receive='receive'函数，  提共一个通道，让Heander返回的数据通过这个函数App能够接收到  -->
+            <MyHeader  
+                :receive='receive'
+            />   
+            <!-- 传输数据给List :todoList='todos'  -->
+            <MyList  
+                :todoList='todos'
+                :checkTodo='checkTodo' 
+                :DeleteTodo='DeleteTodo'
+            />
+
+            <!-- 传入todos 给 Footer -->
+            <MyFooter 
+                :todos='todos'
+                :checkAllTotal='checkAllTotal'
+                :clearAllTotal='clearAllTotal'
+            />
+        </div>
+    </div>
+    </div>
+</template>
+
+<script>
+
+    import MyHeader from './components/MyHeader.vue'
+    import MyList from './components/MyList.vue'
+    import MyFooter from './components/MyFooter.vue'
+
+    export default {
+        components: {
+            MyHeader,
+            MyList,
+            MyFooter
+        },
+        data() {
+            return {
+                // 定义数据 
+                todos: [
+                    {
+                        id: '001',
+                        title: "事件1",
+                        done: true
+                    },
+                    {
+                        id: '002',
+                        title: "事件2",
+                        done: false
+                    },
+                    {
+                        id: '003',
+                        title: "事件3",
+                        done: true
+                    }
+                ]
+            }
+        },
+        methods: {
+            // 定义函数在App和Header中数据进行传输， 添加输入的方法 
+            receive(addTodo) {
+                // 将数据传入添加到 data() 中 ， 在最前方添加 
+                this.todos.unshift(addTodo)
+            },
+
+            // 定义给item组件中的check动态绑定 (爷爷给孙子传输数据)
+            checkTodo(id) {
+                // 绑定数据 
+                this.todos.forEach(function(todo) {
+                    // 将id数据对象中的 deon 进行取反 
+                    if(todo.id === id) todo.done = !todo.done
+                })
+            },
+
+            // 删除数据 
+            DeleteTodo(id) {
+                // 过滤出todo.id 不等于 id 的数组对象，才能达到删除的目的
+                this.todos = this.todos.filter(todo => todo.id !== id);  
+                // 返回一个一个新数组
+            },
+
+            // 定义全选，或者全不选 
+            checkAllTotal(value) {
+                this.todos.forEach(todo => todo.done = value)
+            },
+
+            // 清除已经完成的todo 
+            clearAllTotal(){
+                // 得到todo.done为false的对象  
+                this.todos = this.todos.filter((todo) => !todo.done); 
+            }
+        }
+    }
+</script>
+```
+
+
+
+
+
+
+
+*MyHeader.vue*
+
+分析代码， 在Header中需要输入一个事件，接下来，逻辑部分 我们就必须拿到 **事件的值、清空输入、将事件的值包装**成一个跟原数据一样的对象，然后返回给上层  App 组件
+
+```vue
+<template>
+    <div class="todo-header">
+        <input 
+            type="text" 
+            placeholder="请输入你的任务名称，按回车键确认" 
+            v-model='title' 
+            @keyup.enter="add"/>
+    </div>
+</template>
+
+<script>
+    import {nanoid} from 'nanoid'  // nanoid 随机生成一个ID 
+    export default {
+        name: 'MyHeader',
+        data() {
+            // 获取输入的值 
+            return {
+                // 用 v-model 双向绑定的数据 
+                title: ''
+            }
+        },
+        // 接收App传入进来的方法 
+        props: ['receive'],
+
+        methods: {
+            
+            // 添加事件 
+            add() {
+                // 判断title是否为空,  trim去除两边空格
+                if(!this.title.trim()) return alert('请输入数据')
+                // 将输入的数据组装成一个对象
+                const infoObj = {
+                    id: nanoid(),   // nanoid的用法 
+                    title: this.title,
+                    done: false   // 添加事件默认为 false 
+                }
+                // 调用receive函数，给App组件返回值，让App组件添加一个对象 
+                this.receive(infoObj)
+                this.title =''  // 清空输入
+            }
+        }
+    }
+</script>
+```
+
+
+
+
+
+*MyList.vue*
+
+在List当中，对Item组件进行循环遍历，展示数据 ， 和为 Item 和 App之间的传递数据 ， 开启通道
+
+```vue
+<template>
+    <ul class="todo-main">
+        <!-- :todoInfo='todoObj'； 传入todos 对象，使用 props 接收
+            必须写成 :todoInfo ， 因为这样接收的todoObj，才是表达式 -->
+        <Item 
+            v-for="todoObj in todoList" 
+            :key="todoObj.id" 
+            :todoInfo='todoObj'
+            :checkTodo='checkTodo' 
+            :DeleteTodo='DeleteTodo'
+            />
+            <!-- :checkTodo='checkTodo' , 父元素和子元素的通道 -->
+    </ul>
+
+</template>
+
+<script>
+    import Item from './Item.vue'
+    export default {
+        name: 'MyList',
+        components: {Item},
+
+        // 接收 App传入的todoList（数据项）, 并且循环使用
+        // 接收 App传入的 handlCheck 给 List 下的组件 Item 使用 
+        props: ['todoList', 'checkTodo', 'DeleteTodo']
+    }
+</script>
+```
+
+
+
+*MyFooter.vue*
+
+Footer中需要 配置数据的 全选或者全不选， 和清空已完成的事件， 和对完成事件的统计 
+
+```vue
+<template>
+<!-- v-show='total' 判断total， 控制隐藏 -->
+    <div class="todo-footer" v-show='total'>
+    <label>
+        <!-- 配置全选或者 全不选，使用点击方法  -->
+        <!-- <input type="checkbox" :checked="isAll"  @change="checkAll"/> -->
+        
+        <!-- 这里这里使用 v-model 实现， 绑定再 isAll上 -->
+        <input type="checkbox" v-model="isAll" />
+
+    </label>
+    <span>
+        <!-- 使用计算属性写，完成的个数  -->
+        <span> 已完成{{doneTotal}} </span> / 全部 {{total}}
+    </span>
+    <button class="btn btn-danger" @click="clearAll">清除已完成任务</button>
+    </div>
+</template>
+
+<script>
+    export default {
+        name: 'MyFooter',
+        
+        // App传入的参数 ， 方法 
+        props: ['todos', 'checkAllTotal', 'clearAllTotal'],
+        
+        
+        // 都是由计算属性写
+        computed: {
+            
+            
+            // todos 的长度， 也就是事件的总长度 
+            total() {
+                return this.todos.length
+            },
+            
+            
+            // 完成的个数 (统计)
+            doneTotal() {
+                // 返回的是 todo.done 为 true 的值 ， 如果为真返回 1,
+                return this.todos.reduce((pre,todo) =>  pre + (todo.done ? 1 : 0) ,0)
+            },
+            
+            
+            // 全选的按钮  通过计算属性进行书写 
+            isAll: {   // isAll的值是 v-model双向数据的绑定, true / false
+                get() {
+                    return this.total === this.doneTotal && this.total > 0
+                },
+                // 当数据发生变化时, 调用checkAllTotal函数，并且传入value的值
+                set(value) {
+                    // checkAllTotal()给app传入的参数
+                    this.checkAllTotal(value)
+                }
+            } 
+            // isAll() {
+            //     return this.total === this.doneTotal && this.total > 0
+            // }
+        },
+
+        methods: {
+            // checkAll(e) {
+            //     // 传入参数 
+            //     this.checkAllTotal(e.target.checked)
+            // }
+
+            // 清除已经完成的todo 
+            clearAll() {
+                // 调用就行
+                this.clearAllTotal()
+            }
+        }
+    }
+</script>
+```
+
+
+
+*Item.vue*
+
+在 Item中需要对 App进行数据的交互，比如事件选中，App中的数据要同步，删除数据 
+
+```vue
+<template>
+<li>
+    <label>
+            <!-- :checked='todoInfo.done' 这样写才能动态接收到 todoInfo中的信息 -->
+        <input 
+            type="checkbox" 
+            :checked='todoInfo.done' 
+            @change="handlCheck(todoInfo.id)" 
+        />
+        
+        <!-- 使用 v-model 也能双向数据绑定实现动态数据变化功能，但是不太推荐，因为有点违反原则，因为修改			了 props  -->
+        <!-- <input 
+            type="checkbox" 
+            v-model='todoInfo.done'
+        /> -->
+        
+        
+        <!--  数据的展示  -->
+        <span>{{todoInfo.title}}</span>
+    </label>
+    <button class="btn btn-danger"  @click='handlDelet(todoInfo.id)' >删除</button>
+</li>
+</template>
+
+<script>
+    export default {
+        name: "Item",
+        
+        // 接收todos对象, 和对App传入的参数，和删除方法 
+        props: ['todoInfo','checkTodo', 'DeleteTodo'],
+        methods: {
+            // 勾选 or  取消勾选， 传入事件的id给App，让App对数据的done值进行修改 
+            handlCheck(id){
+                this.checkTodo(id)
+            },
+
+            // 删除， 传入事件的id给App，让App进行删除 
+            handlDelet(id) {
+                // 调用 DeleteTodo(id) 返回给 App， 进行数据的删除 
+                this.DeleteTodo(id)
+            }
+        }   
+    }
+</script>
+
+```
+
+
+
+
+
+### TodoList总结
+
+组要熟悉使用单组件开发的流程，基础的事件绑定方法和处理数据 ， 组件的上下级之间的传输数据，  
+
+
+
+对组件化编码的流程 ： 
+
+1. 拆分静态组件 ：  组件要按照 **功能** 点拆分， 命名不要于HTML元素冲突  
+2. 实现动态组件 ： 考虑好数据存放的位置，数据是一个组件在使用，还是一些组件在使用 
+   1. 一个组件在使用时 ： 放在组件自身即可 
+   2. 一些组件都在使用时 ： 放在它们共同的父组件上  （状态提示）
+3. 实现交互 ： 绑定事件开始 （基础） 
+
+
+
+props适用于 ：
+
+1. 父组件 ===>  子组件通信 （` :todoList='todos'` ）
+2. 子组件 ===> 父组件通信 (要求父先给子一个函数)   ` :receive='receive'`   
+
+
+
+使用 `v-model` 时要切记 ： v-model 绑定的值不能是 props 传过来的值， 因为 props 是不可以修改的  
+
+
+
+props传过来的若是对象类型的值， 修改对象中的属性是 Vue 不会报错， 但是不推荐这样做 ，因为props 是不可以修改的  
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
