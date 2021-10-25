@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>localStorage</title>
+</head>
+
+<body>
+    <h2>localStorages</h2>
+    <button type="button" onclick='saveData()'>点击保存数据</button>
+    <br>
+    <button type="button" onclick='readData()'>点击读取数据</button> <br>
+    <button type="button" onclick='deleteData()'>点击删除数据</button> <br>
+
+    <script>
+        function saveData() {
+            const obj = {
+                name: 'yellowsea',
+                age: 18
+            };
+            // 都会将数据转为字符串中
+            localStorage.setItem('msg', 'hello');
+            localStorage.setItem('msg2', 666);
+            localStorage.setItem('person', JSON.stringify(obj));
+        }
+
+        function readData() {
+            console.log(localStorage.getItem('msg'))
+            console.log(localStorage.getItem('msg2'));
+            console.log(JSON.parse(localStorage.getItem('person')));
+        }
+
+        function deleteData() {
+            localStorage.removeItem('msg');
+            localStorage.removeItem('msg2');
+            localStorage.removeItem('person');
+        }
+    </script>
+</body>
+
+</html>

@@ -1241,6 +1241,30 @@ props传过来的若是对象类型的值， 修改对象中的属性是 Vue 不
 
 
 
+## 浏览器本地存储
+
+浏览器本地存储内容的大小一般支持5MB左右 (不同浏览器可能还不一样)
+
+浏览器通过 `window.sessionStorage` 和 `window.localStorage` 属性实现本地存储机制 
+
+相关API 
+
+1. `xxxStorage.setItem('key','value')` : 该方法接收一个键和值对 添加到存储中，如果键名存在，则更新键值
+2. `xxxStroage.getItem('person')`  :  接受一个键名作为参数， 返回键名对应的值 
+3. `xxxStorage.removeItem('key')`  :  接受一个键名作为参数， 并把键名从存储中删除 
+4. `xxxStorage.clear()`  ： 清空存储中的所有数据 
+
+
+
+备注 ： 
+
+1. SessionStorage存储的内容会随着浏览器窗口关闭而消失
+2. LocalStorage存储的内容，需要手动清除才消失
+3. `xxxStroage.getItem(xxx)`  :  如果xxx对应的value 获取不到， 那么getter的返回值是null 
+4. `JSON.parse(null)`  的结果依然是 null 
+
+
+
 
 
 
