@@ -1435,9 +1435,107 @@ this.$off();  // 解绑所有自定义事件
 
 
 
+## 全局事件总线
+
+![image-20211026161139365](https://gitee.com/yunhai0644/imghub/raw/master/20211026161148.png)
 
 
 
+兄弟组件之间需要互相传输数据，  需要一个”中间人“  做跳板，让它们之间的数据能够传输 。 中间人的身份必须要又 `$emit $on  $off ` 等方法，  考虑到 全局组件的原型 都 指向 VM  ，  所以在 VM原型上定义一个 全局事件总线 ，让所有的组件都能通过 this 访问到VM的原型， 进而使用VM原型上的方法  
+
+
+
+**创建全局事件总线**
+
+```js
+// main.js
+new Vue({
+    el: '#app',
+    render: h => h(App),
+    beforeCreate() {
+        Vue.prototype.$bus = this
+    }
+});
+```
+
+**提供数据方**
+
+```js
+...
+methods: {
+    sendStudentName() {
+        // 使用 $bus.$emit() 自定义组件，和传递数据 
+        this.$bus.$emit('hello', this.name)
+    }
+}
+```
+
+**接收数据方**
+
+```js
+methods: {
+    // 记得写接收的参数 
+    showInfo(data) {
+        console.log('我是 School 组件我收到了 Student 传过来的数据 ',data)
+        this.msg  = data
+    },
+},
+...
+mounted() { // 生命周期钩子，
+    this.$bus.$on('hello', this.showInfo)
+},
+beforeDestroy() {
+    //  调用后，在准备销毁前 
+    this.$bus.$off('hello')
+}
+```
+
+
+
+
+
+### 总结
+
+1. 一种兄弟组件之间的通信方式 ，适用于任意组件(父子， 兄弟)
+
+2. 安装全局事件总线 ： 
+
+   ```js
+   // 在 main.js 中 
+   new Vue({
+       el: '#app',
+       render: h => h(App),
+       beforeCreate() {
+           // 定义  $bus 作为 全局事件总线 ，值指向 VM 
+           Vue.prototype.$bus = this
+       }
+   });
+   ```
+
+3. 使用事件总线 
+
+   1. 接收数据一方 :  A想接收数据 ， 则 A组件中给 `$bus` 绑定自定义事件， 事件的**回调**留在 A组件组时 
+
+      ```js
+      methods: {
+          demo(data) {....}  // 接收参数的方法
+      }
+      ... 
+      mounted() { // 生命周期钩子
+          this.$bus.$on('自定义事件', this.demo);  // 回调函数
+      }
+      ```
+
+   2. 提供数据一方 ：  
+
+      ```js
+      // 定义方法 
+      ...
+      
+      this.$bus.$emit('自定义事件', 需要传输的数据 )
+      ```
+
+4. 最好在`beforeDestroy`钩子中, 使用 `$off` 去解绑当前组件用到的事件 
 
 
 
