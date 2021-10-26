@@ -1300,6 +1300,143 @@ watch: {
 
 
 
+## 组件自定义事件 
+
+因为开发过程中，需要子组件需要给父组件传输数据， 目前学到的一种方法 ：  通过父组件给子组件传递函数类型的props实现， 子给父传递数据
+
+还可以使用组件自定义对象实现 子组件给父组件传递数据
+
+
+
+
+
+### 绑定 
+
+
+
+第一种方法 ： 通过父组件给子组件邦迪一个自定义事件实现 ： 子给父传输数据 
+
+*App.vue*
+
+```vue
+<template>
+    <div class='app'>
+        <!-- 通过父组件给子组件邦迪一个自定义事件实现 ： 子给父传输数据  (第一种) -->
+        <Student @hidie='getStudentName'/>  
+        <!-- v-on:hidie  或者 @hidie 自定义事件  -->
+    </div>
+</template>
+
+<script>
+    methods: {
+            getStudentName(name) {
+                console.log("App调用Student组件，获取到Studentl的name ",name)
+            }
+        },
+</script>
+```
+
+
+
+*Student.vue*
+
+```vue
+<template>
+    <div class='demo'>
+        <h2>学生姓名： {{name}}</h2>
+        <h2>学生的性别: {{sex}}</h2>
+        <!--  绑定点击事件 -->
+        <button @click='getStudentName'>点击获取Student姓名</button>
+    </div>
+</template>
+
+<script>
+    ...
+    methods: {
+        getStudentName() {
+            // 使用 this.$emit('自定义事件名', '返回的参数') 进行调用 
+            this.$emit('hidie',this.name)
+        }
+    }
+</script>
+```
+
+
+
+第二种方法 ： 
+
+```vue
+<template>
+    <div class='app'>
+        <!-- 通过父组件给子组件邦迪一个自定义事件实现 使用 ref 实现 ：子给父传输数据  (第二种) -->
+        <Student ref='studen' />
+    </div>
+</template>
+
+<script>
+	... 
+    // 生命周期钩子， mounted() 当App挂载完成后 
+    mounted() {
+    // 通过vc获取到  refs 身上的 student 使用 $on绑定 自定义事件， 然后回调 getStudentName 函数 
+        this.$refs.studen.$on('hidie',this.getStudentName)
+    }
+</script>
+```
+
+
+
+
+
+### 解绑
+
+```js
+this.$off('hidie');  // 解绑一个自定义事件 
+this.$off(['hidie','demo']);  // 解绑多个自定义事件
+this.$off();  // 解绑所有自定义事件 
+```
+
+
+
+### 总结
+
+1. 第一种组件间通信方式 ， 适用于 ：  子组件 ==> 父组件 
+
+2. 使用场景 : A是父组件， B是子组件， B想给 A传输数据， 那么就要在A种给B绑定自定义事件  (事件的回调在A中)
+
+3. 绑定自定义事件 ：
+
+   1. 第一种方式 ： 在父组件中 : `<Student @hidie='getStudentName' @demo='mi'/>` 
+
+   2. 第二种方式 ： 在父组件中 ： 
+
+      ```js
+      <Student  ref='xxx'/>
+       ... 
+      mounted() {
+          this.$refs.xxx.$on('xxx',this.test)
+      }
+      ```
+
+   3. 若想让自定义事件只能触发一次， 可以使用 `once` 修饰符 ，  或者 `$once` 方法 
+
+4. 触发自定义事件 ： `this.$emit('hidie',传输的数据)`  
+
+5. 解绑自定义事件 ： `this.$off('hidie')`   
+
+6. 组件上也可以绑定原生的DOM事件 ， 需要使用 `native` 修饰符  `<Student @click.native='add'/>`
+
+7. 注意： 通过 `this.$refs.xxx.$on('hidie', 回调) ` 绑定自定义事件时， 回调要么配置在 `methods` 中， 要么配置成箭头函数， 否则 this 的指向会出现问题 
+
+
+
+
+
+
+
+
+
+
+
 
 
 

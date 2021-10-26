@@ -4,10 +4,8 @@
         <div class="todo-wrap">
             <!-- 并且使用 :receive 的形式， 不然props接收到的不是表达式， 而是字符串   -->
             <!-- :receive='receive'函数，  提共一个通道，让Heander返回的数据通过这个函数App能够接收到  -->
-
-            <!--  @receive='receive' 组件自定义事件 -->
             <MyHeader  
-                @receive='receive'
+                :receive='receive'
             />   
             <!-- 传输数据给List :todoList='todos'  -->
             <MyList  
@@ -19,8 +17,8 @@
             <!-- 传入todos 给 Footer -->
             <MyFooter 
                 :todos='todos'
-                @checkAllTotal='checkAllTotal'
-                @clearAllTotal='clearAllTotal'
+                :checkAllTotal='checkAllTotal'
+                :clearAllTotal='clearAllTotal'
                 />
         </div>
     </div>
