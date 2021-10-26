@@ -1269,6 +1269,37 @@ props传过来的若是对象类型的值， 修改对象中的属性是 Vue 不
 
 
 
+## TodoList 本地存储 
+
+使用监视属性`watch `  进行对 todos 的监视， 对于 todos的数据不要写死，使用 `localStorage.setItem()` 写到 todos 中，   在使用 `localStorage.getItem()` 写到本地存储中 
+
+*App.vue*
+
+```js
+data() {
+    return {
+        // JSON.parse(localStorage.getItem('todos')) 将数据存储到本地 
+        todos: JSON.parse(localStorage.getItem('todos'))  || [],
+    }
+},
+    
+watch: {
+    todos: {
+        deep: true,  // 开启深度监视
+            handler(value) {
+            // 监视todos数据，将todos转为JSON 
+            localStorage.setItem('todos',JSON.stringify(value))
+        }
+    }
+}
+```
+
+
+
+
+
+
+
 
 
 

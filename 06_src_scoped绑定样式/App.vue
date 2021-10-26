@@ -6,8 +6,8 @@
 </template>
 
 <script>
-    import School from './components/School.vue'
-    import Student from './components/Student.vue'
+    import School from '../06_src_scoped绑定样式/components/School.vue'
+    import Student from '../06_src_scoped绑定样式/components/Student.vue'
     
     export default {
         components: {
