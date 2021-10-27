@@ -2,18 +2,16 @@
     <ul class="todo-main">
         <!-- :todoInfo='todoObj'； 传入todos 对象，使用 props 接收
             必须写成 :todoInfo ， 因为这样接收的todoObj，才是表达式 -->
-
         <Item 
             v-for="todoObj in todoList" 
             :key="todoObj.id" 
             :todoInfo='todoObj'
-        />
+            />
     </ul>
 
 </template>
 
 <script>
-
     import Item from './Item.vue'
     export default {
         name: 'MyList',

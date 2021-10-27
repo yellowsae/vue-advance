@@ -1,37 +1,29 @@
 <template>
-    <transition 
-        appear
-        name='animate__animated animate__bounce'
-        enter-active-class='animate__backInDown'
-        leave-active-class='animate__backOutLeft'
-    >
-        <li>
-            <label>
-                    <!-- :checked='todoInfo.done' 这样写才能动态接收到 todoInfo中的信息 -->
-                <input 
-                    type="checkbox" 
-                    :checked='todoInfo.done' 
-                    @change="handlCheck(todoInfo.id)" 
-                />
+<li>
+    <label>
+            <!-- :checked='todoInfo.done' 这样写才能动态接收到 todoInfo中的信息 -->
+        <input 
+            type="checkbox" 
+            :checked='todoInfo.done' 
+            @change="handlCheck(todoInfo.id)" 
+        />
 
-                <span v-show="!todoInfo.isEdit" >{{todoInfo.title}}</span>
-                <input 
-                    type="text" 
-                    :value="todoInfo.title"
-                    v-show="todoInfo.isEdit"
-                    @blur='handleBlur(todoInfo,$event)'
-                    ref='inputTitle'
-                >
-            </label>
-            <button class="btn btn-danger" @click='handlDelet(todoInfo.id)' >删除 </button>
-            <button class="btn btn-edit" @click='handleEdit(todoInfo)' v-show='!todoInfo.isEdit' > 编辑 </button>
+        <span v-show="!todoInfo.isEdit" >{{todoInfo.title}}</span>
+        <input 
+            type="text" 
+            :value="todoInfo.title"
+            v-show="todoInfo.isEdit"
+            @blur='handleBlur(todoInfo,$event)'
+            ref='inputTitle'
+        >
+    </label>
+    <button class="btn btn-danger" @click='handlDelet(todoInfo.id)' >删除 </button>
+    <button class="btn btn-edit" @click='handleEdit(todoInfo)' v-show='!todoInfo.isEdit' > 编辑 </button>
 
-        </li>
-    </transition>
+</li>
 </template>
 
 <script>
-    import 'animate.css';
     import pubsub from 'pubsub-js';
     export default {
         name: "Item",

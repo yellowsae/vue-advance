@@ -1496,7 +1496,7 @@ beforeDestroy() {
 
 ### 总结
 
-1. 一种兄弟组件之间的通信方式 ，适用于任意组件(父子， 兄弟)
+1. 一种兄弟组件之间的通信方式 ，适用于任意组件(父子， 兄弟，爷孙， 父子之前最好使用 props)
 
 2. 安装全局事件总线 ： 
 
@@ -1536,6 +1536,175 @@ beforeDestroy() {
       ```
 
 4. 最好在`beforeDestroy`钩子中, 使用 `$off` 去解绑当前组件用到的事件 
+
+
+
+
+
+
+
+## 消息订阅与发布
+
+使用引入的库实现 （pubsub-js）
+
+接收方
+
+```js
+mounted() {
+    // 使用 vue 的全局事件总线 
+    // this.$bus.$on('hello', this.showInfo)
+    
+    // 使用 pubsub , this.showInfo 回调函数 
+    this.pid = pubsub.subscribe('hello', (pubName,data) => {
+        console.log('我是 School 组件我收到了 Student 传过来的数据 ',pubName,data )
+        this.msg  = data
+    })
+
+},
+beforeDestroy() {
+        //  调用后，在准备销毁前 
+        // this.$bus.$off('hello')
+        // 取消 消息订阅 
+        pubsub.unsubscribe(this.pid)
+    }
+```
+
+发送方
+
+```js
+methods: {
+    sendStudentName() {
+        // this.$bus.$emit('hello', this.name)
+
+        // 发布消息，订阅消息的方法名 要和接收方的一致
+        pubsub.publish('hello', this.name)
+    }
+}
+```
+
+
+
+
+
+
+
+### 总结 
+
+1. 一种组件之间通信的方式， 适用于 任意组件之间的通信
+
+2. 使用： 
+
+   1. 安装 pubsub : `npm i  pubsub-js` 
+   2. 组件中引入 ： `import  pubsub  from  'pubsub-js'`
+
+   3. 接收数据方 ： 
+
+      ```js
+      methods() {
+          demo(data) {...}
+      }
+          ...
+      mounted() {
+              this.pubid = pubsub.subscribe('xxx', this.demo) // 订阅消息 
+          }
+      ```
+
+   4. 提供数据方 ： `pubsub.publish('xxx', 数据)` 
+
+   5. 最好在 `beforeDestroy` 钩子中， 用 `pubsub.unsubscribe(pubid)`  去 取消订阅 
+
+
+
+
+
+
+
+##  `$nextTick()`
+
+
+
+```js
+// 使用 Vue中的  $nextTick  获取焦点 
+// nextTick 所指定的回调会在DOM节点更新完毕后执行 , 所以在DOM数据发生改变后使用 nextTick()获取input框的焦点
+this.$nextTick(function () {
+    this.$refs.inputTitle.focus()
+})
+```
+
+
+
+在Vue中 `nextTick()` 回经常用到， 比如在获取焦点
+
+`nextTick()`
+
+1. `nextTick()`语法 ： `this.$nextTick(回调函数)` 
+2. 作用： 在**下一次**DOM更新结束后执行回指定的回调 
+3. 什么使用使用 ： 当改变数据后， **要基于更新后的新DOM进行某些操作时**， 要在 nextTick 指定的回调函数中执行 
+
+
+
+也就是在Vue数据发生改变后，发生数据变化， 重新解析模板， 生成新的数据，然后执行 `nextTick()` 中的回调函数 
+
+
+
+
+
+
+
+## Vue封装的过度与动画 
+
+
+
+1. 作用 ： 在插入、更新或移除DOM元素时， 在合适的时候给元素添加样式类名 
+
+2. 图示
+
+   ![vue动画](https://cn.vuejs.org/images/transition.png)
+
+3. 写法： 
+
+   1. 准备好样式 ： 
+
+      - 元素进入时的样式 ： 
+        1. v-enter :  进入的起点 
+        2. v-enter-active : 进入过程中
+        3. v-enter-to : 进入的终点 
+      - 元素离的样式 ：
+        1. v-leave : 离开的起点 
+        2. v-leave-active : 离开的过程中 
+        3. v-leave-to : 离开的终点 
+
+   2. 使用 `<transition>` 包裹要过度的元素， 并配置name属性 
+
+      ```html
+      <transition name='hello'>
+          <h1 v-show='isShow'>你好啊！</h1>
+      </transition>
+      ```
+
+   3. 备注 ： 若有多个元素需要过度， 则需要使用 :  `<transition-group>` 且每个元素都要指定 `key` 值 
+   
+4. 使用第三方库 : https://animate.style/
+
+   1. 安装 ： `npm install animate.css --save`
+
+   2. 导入 ： `import 'animate.css';`
+
+   3. 使用 :  
+
+      ```vue
+      <!-- 使用第三方库 设置样式 -->
+      <!-- enter-active-class: 进来时的样式  -->
+      <!--  -->
+      <transition  
+                  appear
+                  name='animate__animated animate__bounce'
+                  enter-active-class='animate__rubberBand'
+                  leave-active-class='animate__backOutDown'
+                  >
+          <h1 v-show='isShow'>你好啊！</h1>
+      </transition>
+      ```
 
 
 
