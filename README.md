@@ -6,7 +6,7 @@
 
 **脚手架的文件们**
 
-```bash
+```tex
 .
 ├── babel.config.js   // babel配置文件， 用于ES6->ES5语言的转变
 ├── node_modules	// 依赖包
@@ -515,7 +515,7 @@ methods: {
 ### **实现复用**
 
 ```js
-// mixin.js   混合文件 
+// mixin.js   需要创建 mixin.js  混合文件 
 export const hunhe = {
     methods: {
         showInfo() {
@@ -1365,6 +1365,8 @@ watch: {
 
 第二种方法 ： 
 
+// App.vue
+
 ```vue
 <template>
     <div class='app'>
@@ -1496,7 +1498,7 @@ beforeDestroy() {
 
 ### 总结
 
-1. 一种兄弟组件之间的通信方式 ，适用于任意组件(父子， 兄弟，爷孙， 父子之前最好使用 props)
+1. 一种兄弟组件之间的通信方式 ，适用于任意组件(父子， 兄弟，爷孙， 父子之间最好使用 props)
 
 2. 安装全局事件总线 ： 
 
@@ -1705,6 +1707,4 @@ this.$nextTick(function () {
           <h1 v-show='isShow'>你好啊！</h1>
       </transition>
       ```
-
-
 
