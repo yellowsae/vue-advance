@@ -1708,3 +1708,65 @@ this.$nextTick(function () {
       </transition>
       ```
 
+
+
+
+
+
+
+
+
+
+
+## Vue配置代理
+
+
+
+**方式一**
+
+在`vue.config.js` 中添加如下配置 （https://cli.vuejs.org/zh/config/#devserver）
+
+```js
+module.exports = {
+  devServer: {
+    proxy: 'http://localhost:8080'  // 代理的端口 
+  }
+}
+```
+
+说明 ： 
+
+1. 优点 ： 配置简单， 请求资源时， 直接发给前端 8080 即可
+2. 缺点： 不能配置多个代理，不能灵活的控制请求是否走代理 
+3. 工作方式 ： 若按照上述配置请求了代理， 当请求了前端不存在的资源时， 那么该请求就会转发给服务器（优先匹配给前端资源）
+
+
+
+**方式二**
+
+在`vue.config.js` 中添加如下配置 （https://cli.vuejs.org/zh/config/#devserver）
+
+```js
+module.exports = {
+  devServer: {
+      proxy: {
+          '/api': { // 匹配 所以 以 `/api` 开头的请求路径 
+              target: 'http://localhost:8080', // 代理目标的基础路径
+              ws: true, // 支持开启 WebSocks
+              changeOrigin: true, // 请求的 host 请求ip 是否为反向代理的 
+              pathRewrite: { '^/api': '' }, // 路径重写； 匹配以api开头的路径，重写为 '' 空  
+          },
+      }
+  }
+}
+```
+
+1. 优点 ： 可以配置多个代理，而且可以灵活控制请求是否走代理，
+2. 缺点： 配置略为繁琐， 请求资源时必须加前缀
+
+
+
+
+
+
+
