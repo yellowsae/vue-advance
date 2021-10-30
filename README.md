@@ -1770,3 +1770,107 @@ module.exports = {
 
 
 
+## github Search案例
+
+实现内容
+
+<img src="https://gitee.com/yunhai0644/imghub/raw/master/20211030115249.png" alt="image-20211030115234511" style="zoom:50%;" />
+
+
+
+分析 ：可分为两个单个组件 ：  Search    List   
+
+search 发送请求获取数据，  List负责接收数据，数据渲染  ， 涉及到， 两个单个组件中的数据间通信和 axios 请求 
+
+
+
+**实现代码 ：** 
+
+*Search.vue*
+
+```js
+methods: { 
+    searchUser() {
+        
+       // 使用全局事件总线  $bus 
+        // 正在加载中 
+        this.$bus.$emit('getUsers',{isFirst:false, isLoading: true, errorMsg: '', users: []})
+        // 请求数据 
+        axios.get(`https://api.github.com/search/users?q=${this.keyWord}`).then(
+            response => {
+                // 请求成功时 
+                this.$bus.$emit('getUsers',{ isLoading: false, errorMsg: '', users:response.data.items})
+            },
+            error => {
+                // 请求失败时 
+                this.$bus.$emit('getUsers',{isLoading: false, errorMsg: error.message, users: []})
+            }
+        )
+    }
+}
+```
+
+
+
+
+
+*List.vue*
+
+```vue
+<template>
+    <div class="row">
+        <!-- 初始化页面  -->
+        <div class="card"
+            v-show='info.users.length' 
+            v-for='user in info.users' 
+            :key="user.login"
+        >
+            <a :href="user.html_url" target="_blank">
+            <img :src="user.avatar_url" style='width: 100px' id='avatar_url' />
+            </a>
+            <p class="card-text">{{user.login}}</p>
+        </div>
+        <!-- 欢迎词 -->
+        <h2 v-show='info.isFirst'>欢迎使用</h2>
+
+        <!-- 加载页面  -->
+        <h2 v-show='info.isLoading'>加载中 。。。。。。。。</h2>
+
+        <!-- 错误页面 -->
+        <h2 v-show="info.errorMsg">{{info.errorMsg}}</h2>
+    </div>
+</template>
+
+<script>
+    export default {
+        name: 'List',
+        data() { 
+            return {
+                info: {
+                    isFirst: true,
+                    isLoading: false,
+                    errorMsg: '',
+                    users: [],
+                }
+            }
+        },
+        
+        // 使用全局事件总线，接收兄弟间的数据  
+        mounted() { 
+            this.$bus.$on('getUsers',(infoObj) => {
+                // {...this.info, ...infoObj} ， 合并对象，
+                this.info = {...this.info, ...infoObj}
+                console.log(this)
+            })
+        }
+    }
+</script>
+
+```
+
+
+
+
+
+
+
