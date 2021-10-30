@@ -9,7 +9,6 @@
 </template>
 
 <script>
-    import axios from "axios";
     export default {
         name: 'Search',
         data() {
@@ -19,11 +18,15 @@
         },
         methods: { 
             searchUser() {
+                console.log(this)
                 // 正在加载中 
                 this.$bus.$emit('getUsers',{isFirst:false, isLoading: true, errorMsg: '', users: []})
 
                 // 请求数据 , 请求参数使用了 ES6的 `` 语法 
-                axios.get(`https://api.github.com/search/users?q=${this.keyWord}`).then(
+
+                // 使用 vue-resource 发送请求， 使用基本和 axios 一样 
+                this.$http.get(`https://api.github.com/search/users?q=${this.keyWord}`).then(
+                // axios.get(`https://api.github.com/search/users?q=${this.keyWord}`).then(
                     response => {
                         // 请求成功时 
                         this.$bus.$emit('getUsers',{ isLoading: false, errorMsg: '', users:response.data.items})

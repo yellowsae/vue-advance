@@ -1872,5 +1872,155 @@ methods: {
 
 
 
+### vue-resource 发送请求 
+
+`vue-resource` :  发送请求库，在vue 1.0版本用的比较多 ，目前使用最多的是 axios ， 需要了解一下 vue-resource ,  
+
+安装 ：  `npm install vue-resource`
+
+ 在`main.js` 中引入(插件进入和使用方法) ： `import   vueResource  from  'vue-resource'` 使用 ：  `Vue.user(vueResource)`   ；  在所有的 vm 或者 vc 身上都多出了一个 `$http `
+
+组件中使用 ： `this.$http.get()  |  this.$http.post()`
+
+
+
+
+
+
+
+
+
+##  Vue插槽
+
+
+
+### 默认插槽
+
+
+
+
+
+### 具名插槽
+
+
+
+
+
+### 作用域插槽
+
+
+
+
+
+### 总结 
+
+作用 ： 让父组件可以向子组件指定的位置插入 **html** 结构， 也是一种组件间的通信方式 ， 适用于  父组件==> 子组件 
+
+分类  ：  默认插槽、 具名插槽 、 作用域插槽 
+
+使用方式 ： 
+
+1. 默认插槽 ： 
+
+   ```html
+   //父组件中 
+       <Category  title='游戏'> 
+   		<div>HTML结构</div>
+       </Category>
+   
+   // 子组件中 
+   	<template>
+           <div class="category">
+               <h3>{{title}}分类</h3>
+               <!-- 定义插槽 -->
+               <slot>插槽默认内容</slot>
+           </div>
+   	</template>
+   ```
+
+2. 具名插槽 
+
+   ```html
+   //父组件中 
+           <Category  title='美食' > 
+               <!-- 使用 具名插槽 时带上名字  slot='content' -->
+               <img slot='content' src="./assets/logo.png" alt="">
+               <a  slot='footer' href="#">更多美食</a>
+           </Category>
+   
+   
+   // 子组件中 
+   <template>
+       <div class="category">
+           <h3>{{title}}分类</h3>
+           <!-- 具名插槽 name="content" -->
+           <slot  name="content"></slot>
+           <slot name="footer"></slot>
+       </div>
+   </template>
+   ```
+
+3. 作用域插槽
+
+   理解 ： 数据在组件自身，但是根据数据生成的结构需要组件的使用者来决定。 (games数据在Category组件中， 但使用数据所遍历出来的结构由 App组件来决定)
+
+   ```html
+   // 父组件中
+   <Category  title='游戏'> 
+       <!-- 接收数据，必须要使用template标签和 slot-scope属性接收 -->
+       <template slot-scope='info'>
+           <ul>
+               <li v-for='(g, index) in info.games' :key="index">{{g}}</li>
+           </ul>
+           <!-- {{info}}  接收到的 info 是一个数据对象 
+   { "games": [ "游戏1", "游戏2 ", "游戏3", "游戏4" ] }
+   -->
+       </template>
+   </Category>
+   
+   <Category  title='游戏'> 
+       <!-- 接收数据，必须要使用template标签和 slot-scope属性接收 -->
+       <template slot-scope='info'>
+           <ol>
+               <li v-for='(g, index) in info.games' :key="index">{{g}}</li>
+           </ol>
+           <!-- {{info}}  接收到的 info 是一个数据对象 
+   { "games": [ "游戏1", "游戏2 ", "游戏3", "游戏4" ] }
+   -->
+       </template>
+   </Category>
+   
+   // 子组件中 
+   
+   <template>
+       <div class="category">
+           <h3>{{title}}分类</h3>
+           <!-- 数据在单个组件中，给组件的复用者，使用作用域插槽 -->
+           <!--  传值方式 ： :games='games' -->
+           <slot :games='games'></slot>
+       </div>
+   </template>
+   
+   <script>
+       export default {
+           name: 'Category',
+           props: ['title'],
+           data() {
+               return {
+                   games: ['游戏1','游戏2 ','游戏3','游戏4'],
+               }
+           }
+       }
+   </script>
+   ```
+
+   
+
+
+
+
+
+
+
 
 
