@@ -1896,17 +1896,122 @@ methods: {
 
 ### 默认插槽
 
+// 在组件中定义默认插槽
 
+```vue
+<template>
+        <!-- 定义一个插槽，等着组件使用者 写数据进行填充   slot -->
+        <slot>默认插槽里可以定义默认内容，当没有使用该插槽时候，会显示默认的内容</slot>
+</template>
+```
+
+
+
+// 使用插槽 
+
+```vue
+<template> 
+        <Category  title='美食' > 
+            <!-- 提供数据给插槽   <slot /> -->
+            <img src="./assets/logo.png" alt="">
+        </Category>
+</template>
+```
 
 
 
 ### 具名插槽
 
+// 定义具名插槽 
 
+```vue
+<template>
+        <!-- 定义一个插槽，等着组件使用者 写数据进行填充   slot -->
+        <!-- 具名插槽 -->
+        <slot  name="content"></slot>
+        <slot name="footer"></slot>
+</template>
+```
+
+
+
+// 使用具名插槽
+
+```vue
+<template> 
+        <Category  title='美食' > 
+            <!-- 使用 具名插槽 slot='content'  -->
+            <img slot='content' src="./assets/logo.png" alt="">
+            <a  slot='footer' href="#">更多美食</a>
+        </Category>
+</template>
+```
 
 
 
 ### 作用域插槽
+
+理解 ： 数据在组件自身，但是根据数据生成的结构需要组件的使用者来决定。 (games数据在Category组件中， 但使用数据所遍历出来的结构由 App组件来决定)
+
+
+
+作用域插槽，当数据没有在使用组件者里 时，可以使用作用域插槽进行数据的传输，改变使用相同组件，不同的样式 
+
+
+
+// 子组件中
+
+```vue
+<template>
+    <div class="category">
+        <!-- 数据在单个组件中，给组件的复用者，使用作用域插槽 -->
+        <!--  传值方式 ： :games='games' -->
+        <slot :games='games'></slot>
+    </div>
+</template>
+
+<script>
+    export default {
+        name: 'Category',
+        props: ['title'],
+        data() {
+            return {
+                games: ['游戏1','游戏2 ','游戏3','游戏4'],
+            }
+        }
+    }
+</script>
+```
+
+
+
+// 父组件中 
+
+```vue
+<template> 
+    <div class="container">
+        
+        <!-- 作用域插槽，当数据没有在使用组件者里 时，可以使用作用域插槽进行
+            数据的传输，改变使用相同组件，不同的样式  -->
+        <Category  title='游戏'> 
+            
+            <!-- 接收数据，必须要使用template标签和 slot-scope属性接收 -->
+            <template slot-scope='info'>
+                <ul>
+                    <li v-for='(g, index) in info.games' :key="index">{{g}}</li>
+                </ul>
+                <!-- {{info}}  接收到的 info 是一个数据对象 
+                    { "games": [ "游戏1", "游戏2 ", "游戏3", "游戏4" ] }
+                -->
+            </template>
+        </Category>
+    </div>  
+</template>
+```
+
+
+
+
 
 
 
@@ -2014,11 +2119,242 @@ methods: {
    </script>
    ```
 
+
+
+
+
+
+
+
+
+
+
+## Vuex
+
+
+
+官网 ： https://vuex.vuejs.org/zh/
+
+概念 ： 在vue中实现集中式状态（数据） 管理的一个Vue插件，对Vue应用中多个组件共享状态进行集中式的管理 （读写） ， 也是一种组件间的通信方式 ，适合用于任意间的组件通信 
+
+
+
+**何时使用** :  当多个组件需要共享数据时
+
+
+
+
+
+### Vuex 工作原理
+
+![vuex](https://vuex.vuejs.org/vuex.png)
+
+
+
+
+
+
+
+### 搭建Vuex环境 
+
+1. 安装 : `npm  install vuex `
+
+2. 创建 :  `src/store/index.js` 
+
+   ```js
+   // 引入Vue核心库
+   import Vue from 'vue';
+   
+   // 引入  Vuex 
+   import Vuex from 'vuex';
+   
+   // 应用 Vuex 
+   Vue.use(Vuex)
+   
+   // 准备好 actions 对象  --- 相应组件中用户的动作 
+   const actions = {}
+   
+   // 准备好 mutations  对象， 修改 store 中的数据 
+   const mutations = {}
+   
+   // 准备好一个 state 对象 ， 用于保存具体的数据
+   const state = {}
+   
+   // 创建Store ：Vuex.Store({})  并暴露 Store
+   export default new Vuex.Store({
+       // 当 key 和 value 同名时，使用简写
+       actions,
+       mutations,
+       state
+   })
+   ```
+
+3. 在 `main.js`中引入`store`
+
+   ```js
+   import Vue from 'vue'
+   import App from './App.vue'
+   
+   Vue.config.productionTip = false
+   
+   // 引入 Store 
+   import store from './store/index'
+   
+   //创建VM 
+   new Vue({
+       el: '#app',
+       render: h => h(App),
+       beforeCreate() {
+           Vue.prototype.$bus = this
+       },
+   
+       // 使用 Vue中的Store 
+       store, // 引入 store 
+   });
+   ```
+
+4. 在组件中查看 `store` 
+
+   ```js
+   mounted() {
+       console.log(this)
+   }
+   ```
+
+   <img src="https://gitee.com/yunhai0644/imghub/raw/master/20211031142945.png" alt="image-20211031142930879" style="zoom:50%;" />
+
+
+
+
+
+
+
+### 基本使用 
+
+1. 初始化数据， 配置 `actions`   配置`mutations`  操作文件 `store.js` 
+
+   `store.js`
+
+   ```js
+   // 引入Vue核心库
+   import Vue from 'vue';
+   
+   // 引入  Vuex 
+   import Vuex from 'vuex';
+   
+   // 应用 Vuex 
+   Vue.use(Vuex)
+   
+   // 准备好 actions 对象  --- 相应组件中用户的动作 
+   const actions = {
+   	// 相应组件中的动作 
+       incrementOdd(context, value) {
+           if (context.state.sum % 2) {
+               context.commit('INCREMENTODD', value)
+           }
+       },
+       incrementWite(context, value) {
+           setTimeout(() => {
+               context.commit('INCREMENTWite', value)
+           }, 500)
+       }
+   }
+   
+   // 准备好 mutations  对象， 修改 store 中的数据 
+   const mutations = {
+       INCREMENT(state, value) { // 收到的是 state中的sum的数据对象具有getter/setter方法， 和actions传过来的 value 
+           // console.log('mutations 收到的参数 ：', store, value);
+           state.sum += value;
+       },
+       DECREMENT(state, value) {
+           state.sum -= value
+       },
+       INCREMENTODD(state, value) {
+           state.sum += value
+       },
+       INCREMENTWite(state, value) {
+           state.sum += value
+       }
+   }
+   
+   // 准备好一个 state 对象 ， 用于保存具体的数据
+   const state = {
+       sum: 0
+   }
+   
+   // 创建Store ：Vuex.Store({})  并暴露 Store
+   export default new Vuex.Store({
+       // 当 key 和 value 同名时，使用简写
+       actions,
+       mutations,
+       state
+   })
+   ```
+
+    `Count.vue`
+
+   ```vue
+   <script>
+           methods: {
+               // 使用 this.$store.despatch() 使用方法 increment，并把 this.n 传递给 actions 中的increment  , 或者直接使用 commit 越过 actions，直接把数据给 mutations
+               increment() {
+                   this.$store.commit('INCREMENT',this.n)
+               },
+               decrement(){
+                   this.$store.commit('DECREMENT',this.n)
+               },
+               incrementOdd() {
+                   this.$store.dispatch('incrementOdd',this.n)
+               },
+               incrementWite() {
+                   this.$store.dispatch('incrementWite',this.n)
+               }
+           },
+   </script>
+   ```
+
    
 
+2. 组件中读取 vuex 中的数据  ： `$store.state.sum`  
+
+3. 组件中修改vuex中的数据 ： `$store.dispatch('actions中的方法名',数据)`  或 `$store.commit('mutations中的方法名',数据)` 
+
+4. 备注 ： 若没有发送网络请求或者其他业务逻辑， 组件中也可以越过actions,  即不写 `dispatch` 直接写 `commit` 
 
 
 
+
+
+### getters 的基本使用 
+
+1. 概念 ：当state中的数据需要经过加工后再使用时， 可以通过 getters 对state 中的数据进行加工 
+
+2. 在 `store.js` 中 追加`getters` 配置 
+
+   ```js
+   ... 
+   // 准备好一个 getters 对象 ， 用于对数据的加工 
+   const getters = {
+       // 定义 bigSum 
+       bigSum(state) {
+           return state.sum * 10
+       }
+   }
+   export default new Vuex.Store({
+       ... 
+       getters, // 配置getters 
+   })
+   ```
+
+3. 在组件中读取getters 的数据  : `$store.getters.bigSum` 
+
+
+
+
+
+
+
+### mapSrate 和 mapGetter
 
 
 
