@@ -2209,7 +2209,15 @@ methods: {
 
 ![vuex](https://vuex.vuejs.org/vuex.png)
 
-代写 ：  xxxxxxxxx
+分析 ：  Vuex主要的核心功能为 `state` `actions` `mutations`  ,  它们之间通信使用了的api有 `dispatch`  `commit`   。   `state` 用于存放数据的 ，  `actions`  用于处理逻辑 和 接受网络上传输的参数，或者vc提供的参数 ，  `mutations` 用于对数据加工，然后返回给 `state` 的 。
+
+  在图中 `actions` 上方的 `backend API` 是表示`actions` 接收到的数据不仅仅是vc通过`dispatch` 提供的， 也可以是由 `backend API` 通过网络请求返回得到的数据 。
+
+`mutations` 旁边的 `Devtools` 表示 vue提供的插件，调试工具 
+
+
+
+Vuex工作流程 ：  需要建立文件 `/store/store.js`    因为vc引入Vuex后 会多出`$store` ， `store` 相当于Vuex的组件，使用Vuex的Api都要经过 `$store`。  在 `store.js` 中需要定义三个对象，也就是Vuex中的三个核心部分 ： `actions` `mutations`   `state`  。 然后在 `main.js` 中引入 `store.js` 文件，添加`store` 到vm中 
 
 
 
@@ -2429,6 +2437,10 @@ methods: {
 *Count.vue*
 
 ```vue
+<template>
+	<h1>当前的求和为: {{$store.state.sum}}</h1>
+</template>
+
 <script>
     // 引入 mapStatr, 和 mapGetters 
     import {mapState, mapGetters} from 'vuex';
@@ -2445,7 +2457,6 @@ methods: {
             //     return this.$store.state.age
             // },
 
-            //  ***************************************
             // 使用 mapState 方法 （对象式） 
             // 使用  ...mapState() 是ES6中 对象中，写入多个对象使用 ... 映射 
             // ...mapState({'sum':'sum', 'name': 'name', 'age':'age',}),
@@ -2454,12 +2465,13 @@ methods: {
             // 数组式，必须式定义映射的变量名 必须要和 state中的变量名一致
             ...mapState(['sum', 'name', 'age']), 
 
-            // **********************
-            // 计算属性的写法 
+            // 计算属性的写法
             // bigSum() {
             //     return this.$store.getters.bigSum
             // }
             
+            
+            // 使用 ...mapGetters()
             // 对象式 {} 
             // ...mapGetters({'bigSum':'bigSum'}),
 
@@ -2613,8 +2625,6 @@ methods: {
    ```
 
 备注： mapActions 与 mapMutations 使用时， 若需要传递参数需要： 在模板中绑定事件时传递好参数，否则参数是事件对象 
-
-
 
 
 
@@ -2828,7 +2838,7 @@ export default new Vuex.Store({
 
 
 
-**在组件中获取到组件模块中的数据**
+**在组件中获取到模块中的数据** 
 
  // `Count.vue` 中 
 
@@ -2866,7 +2876,6 @@ export default new Vuex.Store({
             sum() {
                 return this.$store.state.countAbout.sum
             },
-                
              // getter
             firstPersonName() {
                 // 自己写的计算属性获取 getters中的数据 比较特殊 是使用 [模块名/数据] 获取 
@@ -2901,6 +2910,25 @@ export default new Vuex.Store({
         },
 ```
 
+// `index.js`
+
+```js
+import Vue from 'vue';
+import Vuex from 'vuex';
+import countAbout from './count';
+import personAbout from './person';
+Vue.use(Vuex)
+export default new Vuex.Store({
+    // 在Vuex.$store 中使用 模块
+    modules: {
+        countAbout,
+        personAbout,
+    }
+})
+```
+
+
+
 
 
 // 将index.js 中的模块分割为单个文件 , 并且保留，在 index.js 中引入 
@@ -2923,15 +2951,35 @@ import axios from 'axios';
 import { nanoid } from 'nanoid';
 export default {
     namespaced: true,
-	...
+    actions: {
+        // 处理逻辑 
+        AddWang(context, value) {
+            if (value.name.indexOf('王') === 0) {
+                context.commit('Add_Person', value);
+            } else {
+                alert('要求姓王')
+            }
+        },
+        // 使用 api 返回的数据 
+        addMsg(context) {
+            axios.get('https://autumnfish.cn/api/joke').then(
+                response => {
+                    context.commit('Add_Person', { id: nanoid(), name: response.data })
+                    console.log(response.data)
+                },
+                error => {
+                    console.log(error.message)
+                })
+        }
+    },
+    getters: {
+        firstPersonName(state) {
+            return state.personList[0].name
+        }
+    },
+    ... // 省略以下
 }
 ```
-
-
-
-
-
-
 
 
 
@@ -3009,6 +3057,108 @@ export default {
 
 
 
+
+
+
+
+
+## Vue路由 
+
+
+
+### 认识Vue中的路由
+
+`vue-router `理解  ： vue的一个插件库， 专门用来实现SPA应用 
+
+SPA应用 ： 
+
+- 单页 Web应用 
+- 整个应用只有一个完整的页面 
+- 点击页面的导航链接不会 **刷新** 页面， 只会做页面的局部更新  
+- 数据需要通过 ajax请求获取 
+
+路由的理解 ： 
+
+- 什么是路由 ： 一个路由就是一组映射关系  (key  ---- value) 
+- key 为路径  ， value 可能是 function 或  component 
+
+路由的分类 ： 
+
+- 后端路由 ： 
+  - 理解 ： value 是 function, 用于处理客户端提交的请求 
+  - 工作过程 ： 服务器接收到一个请求时， 根据请求路径找到匹配的函数来处理请求，返回响应数据
+- 前端路由 ： 
+  - 理解 ： value 是 component , 用于展示页面内容  
+  - 工作过程： 当浏览器的路径改变时， 对应的组件就会展示
+
+
+
+
+
+<img src="../../AppData/Roaming/Typora/typora-user-images/image-20211102220931710.png" alt="image-20211102220931710" style="zoom:50%;" />
+
+
+
+### 路由的基本使用
+
+1. 安装`vue-router`  :  `npm install vue-router`
+
+2. 引入 ： `import VueRouter from 'vue-router'`
+
+3. 应用插件 ：  `Vue.use(VueRouter)`
+
+   1. 编写router配置项 : 创建 `/src/router/index.js`
+
+   ```js
+   // 该文件专门用于创建整个应用的 路由器
+   import VueRouter from 'vue-router';
+   //引入组件
+   import About from '../components/About'
+   import Home from '../components/Home'
+   // 创建一个路由器， 并暴露出去 
+   export default new VueRouter({
+       // 路由的对象
+       // 匹配的路径   注意这里 ： routes 而不是 routers 
+       routes: [{ 
+               path: '/about',    //路由匹配的路径
+               component: About	// 展示的组件 
+           },
+           {
+               path: '/home',  
+               component: Home
+           }
+       ]
+   })
+   ```
+
+4. 实现切换（active-class可配置高亮样式） 
+
+   ```vue
+   <template>
+   	<!-- 使用了路由的导航区  -->
+       <!-- 
+       router-link  ：vue-router 中提供的标签 ， 用于处理路由的导航区
+       to="/about" : url路径后的样子 
+       active-class='active'   表示该元素被激活时候的样式 
+       原生样式保持不变 
+       -->
+   	<!-- Vue借助 router-link 标签实现路由的切换  -->
+       <router-link 
+           class="list-group-item" 
+           active-class="active" 
+           to="/about">About
+       </router-link>
+   </template>
+   ```
+
+5. 指定展示位置 
+
+   ```vue
+   <!--router-view  指定组件的呈现位置  --> 
+   <router-view></router-view>
+   ```
+
+   
 
 
 
