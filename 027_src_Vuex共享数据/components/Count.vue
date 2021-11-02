@@ -3,9 +3,9 @@
         <h1>当前的求和为: {{sum}}</h1>
         <h1>当前的求和放大10倍为: {{bigSum}}</h1>
         <h2>学生姓名是 : {{name}}, 年龄是  {{age}}</h2>
-        <ul style='color: red'>
+        <!-- <ul style='color: red'>
             <li v-for='p in personList' :key="p.id">{{p.name}}</li>
-        </ul>
+        </ul> -->
 
 
         <select v-model.number="n" >
@@ -21,7 +21,7 @@
 </template>
 
 <script>
-    import {mapState, mapGetters,mapMutations,mapActions} from 'vuex';
+    import {mapState,mapGetters,mapMutations,mapActions} from 'vuex';
 
     export default {
         name: 'Count',
@@ -31,24 +31,16 @@
             }
         },
         computed: {
-
-            // 使用 模块化命名空间时， 用mpa时候，获取模板数据中的方法 
-            //  ...mapState('模板名',['获取的数据']),  
-
-            // 使用模板中的方法 
-            //  ...mapMutations('模板名',{'方法名':'方法名'}), 
-
-            ...mapState('countAbout',['sum', 'name', 'age',]),  
-            ...mapState('personAbout',['personList']),
-            ...mapGetters('countAbout',['bigSum'])
+            ...mapState(['sum', 'name', 'age']),   // 读取personList 
+            ...mapGetters(['bigSum'])
         },
         methods: {
-            ...mapMutations('countAbout',{'INCREMENT':'INCREMENT'}), 
-            ...mapMutations('countAbout',{"DECREMENT":'DECREMENT'}), 
-            ...mapActions('countAbout',{'incrementOdd':"incrementOdd"}), 
-            ...mapActions('countAbout',{'incrementWite':'incrementWite'}), 
+            ...mapMutations(['INCREMENT']),  // 数组式 
+            ...mapMutations(['DECREMENT']),  
+            ...mapActions(['incrementOdd']),  // 数组式 
+            ...mapActions(['incrementWite']),  // 数组式
         },
-        mounted() {
+        mounted(){
             console.log(this)
         }
     }

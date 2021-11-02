@@ -2620,6 +2620,390 @@ methods: {
 
 
 
+### Vuex实现数据共享
+
+实现过程 ： 把需要共享的数据放在`vuex`中的 `state` 中， 让两方组件都能使用 `this.$store.stare.xxx` 能够访问到数据，组件中逻辑引起 `state` 中的数据发生变化， 另一方的定义的数据也会发生变化 
+
+
+
+//`index.js `  定义vuex中的数据 
+
+```js
+// 准备好一个 state 对象 ， 用于保存具体的数据
+const state = {
+    sum: 0,   // 需要共享的数据 
+    name: 'Yellowsea',
+    age: 20,
+    
+    // 让person组件显示数据
+    personList: [{ id: '001', name: '张三' }]
+}
+
+```
+
+
+
+// `person.vue` 中 
+
+```vue
+<template>
+    <div>
+        <h2>人员列表</h2>
+        // 在 Person组件中使用 Cont组件的 sum 数据
+        <h3 style='color: red'>Count组件中的sum为: {{sum}}</h3>
+        <input type="text" placeholder="请输入人员信息" v-model='name'> 
+        <button @click='Add'>添加</button>
+        <ul>
+            <li v-for='p in personList' :key="p.id">{{p.name}}</li>
+        </ul>
+    </div>
+</template>
+<script>
+    ...
+        computed: {
+            // 获取到 state 中 personList的数据 
+            // personList() {
+            //     return this.$store.state.personList
+            // },
+
+            // 也可以使用 map 定义 
+            ...mapState({'personList':'personList'}),   // 获取personList
+                
+            // sum() {
+            //     return this.$store.state.sum
+            // }
+            ...mapState({'sum':'sum'})   // 获取sum 
+        },
+        methods: {
+            Add() {
+                const personObj = {
+                    "id": nanoid(),
+                    "name": this.name
+                }
+                this.name = '',
+                // 使用 mapMutations 
+                this.$store.commit('Add_Person',personObj)  // 提交数据给 mutations
+            }
+        }
+    }
+</script>
+```
+
+
+
+// `Count.vue`
+
+```vue
+<template>
+    <div>
+        <h1>当前的求和为: {{sum}}</h1>
+        <h1>当前的求和放大10倍为: {{bigSum}}</h1>
+        <h2>学生姓名是 : {{name}}, 年龄是  {{age}}</h2>
+        <!-- 共享的数据 personList -->
+        <ul style='color: red'>
+            <li v-for='p in personList' :key="p.id">{{p.name}}</li>
+        </ul>
+        <select v-model.number="n" >
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+        </select>
+        <button  @click='INCREMENT(n)'>+</button>
+        <button @click='DECREMENT(n)'>-</button>
+        <button @click='incrementOdd(n)'>当前求和为奇数再加</button>
+        <button @click='incrementWite(n)'>等一等再加</button>
+    </div>
+</template>
+<script>
+    import {mapState, mapGetters,mapMutations,mapActions} from 'vuex';
+		...
+        computed: {
+            ...mapState(['sum', 'name', 'age','personList']),   // 读取需要共享的personList 
+            ...mapGetters(['bigSum'])
+        },
+        methods: {
+            ...mapMutations(['INCREMENT']),  
+            ...mapMutations(['DECREMENT']),  
+            ...mapActions(['incrementOdd']),  
+            ...mapActions(['incrementWite']),
+        },
+    }
+</script>
+```
+
+
+
+//Person添加数据时调用的 `mutations() ` 方法 
+
+```js
+Add_Person(state, value) {  // state vuex中的state, value person中传过来的 value 
+    state.personList.unshift(value) // 添加数据 
+}
+```
+
+<img src="https://gitee.com/yunhai0644/imghub/raw/master/20211102125742.png" alt="image-20211102125729301" style="zoom:50%;" />
+
+
+
+
+
+### Vuex 模块化  `namespace`
+
+模块化和命名空间 ： 在 `store` 定义的关于组件的数据，可以机型分开 ，各自具有各自的 方法
+
+//`index.js`
+
+```js
+import Vue from 'vue';
+import Vuex from 'vuex';
+Vue.use(Vuex)
+// Count 组件相关的数据对象 
+const countAbout = {
+    namespaced: true,
+    state: {
+        sum: 0,
+        name: 'Yellowsea',
+        age: 20,
+    },
+    actions: {
+        incrementOdd(context, value) {
+            if (context.state.sum % 2) {
+                context.commit('INCREMENTODD', value)
+            }
+        },
+        incrementWite(context, value) {
+            setTimeout(() => {
+                context.commit('INCREMENTWite', value)
+            }, 500)
+        }
+    },
+    mutations: {
+        INCREMENT(state, value) {
+            state.sum += value;
+        },
+        DECREMENT(state, value) {
+            state.sum -= value
+        },
+        INCREMENTODD(state, value) {
+            state.sum += value
+        },
+        INCREMENTWite(state, value) {
+            state.sum += value
+        },
+    },
+    getters: {
+        bigSum(state) {
+            return state.sum * 10
+        }
+    },
+}
+// person组件相关的数据 
+const personAbout = {
+    namespaced: true,
+    state: {
+        personList: [{ id: '001', name: '张三' }]
+    },
+    actions: {},
+    mutations: {
+        Add_Person(state, value) {
+            state.personList.unshift(value) // 添加数据 
+        }
+    },
+    getters: {},
+}
+
+export default new Vuex.Store({
+    // 在Vuex.$store 中使用 模块 modules 
+    modules: {
+        // 导入定义的模块 
+        countAbout,
+        personAbout,
+    }
+})
+```
+
+// 查看组件中的 `this`  出现的方法     `$store.state` 中 出现了这两个模块 
+
+<img src="https://gitee.com/yunhai0644/imghub/raw/master/20211102145921.png" alt="image-20211102145916781" style="zoom:50%;" />
+
+
+
+**在组件中获取到组件模块中的数据**
+
+ // `Count.vue` 中 
+
+```js
+    computed: {
+
+        // 使用 模块化命名空间时， 用mpa时候，获取模板数据中的方法 
+        //  ...mapState('模板名',['获取的数据']),  
+
+        ...mapState('countAbout',['sum', 'name', 'age',]),  
+            ...mapState('personAbout',['personList']),  // 这个是 person中的共享数据 
+            ...mapGetters('countAbout',['bigSum'])
+    },
+    methods: {
+                // 使用模板中的方法 
+                //  ...mapMutations('模板名',{'方法名':'方法名'}), 
+        	...mapMutations('countAbout',{'INCREMENT':'INCREMENT'}), 
+            ...mapMutations('countAbout',{"DECREMENT":'DECREMENT'}), 
+            ...mapActions('countAbout',{'incrementOdd':"incrementOdd"}), 
+            ...mapActions('countAbout',{'incrementWite':'incrementWite'}), 
+    },
+```
+
+
+
+//`pseron.vue` 中 
+
+```js
+    computed: {
+            // 由自己写的获取数据， 在使用模块化和命名空间时候 的获取数据 
+   			//使用方法 ：  this.$store.state.模块名.state中的数据
+            personList() {
+                return this.$store.state.personAbout.personList
+            },
+            sum() {
+                return this.$store.state.countAbout.sum
+            },
+                
+             // getter
+            firstPersonName() {
+                // 自己写的计算属性获取 getters中的数据 比较特殊 是使用 [模块名/数据] 获取 
+                return this.$store.getters['personAbout/firstPersonName']
+            }
+        },
+        methods: {
+            Add() {
+                const personObj = {
+                    "id": nanoid(),
+                    "name": this.name
+                }
+                this.name = '',
+                    // 提交数据给 mutations
+                    // 使用 commit :  this.$store.commit('模块名/mutations中的方法,传输的数据) 
+                this.$store.commit('personAbout/Add_Person',personObj) 
+            },
+            AddWang() {
+                const personObj = {
+                    "id": nanoid(),
+                    "name": this.name
+                }
+                this.name = '', 
+                // 提交数据给 mutations
+               // this.$store.dispatch('模块名/actons中的方法',需要传输的数据) 
+                this.$store.dispatch('personAbout/AddWang',personObj) 
+            },
+            // 网络请求 
+            addMsg() {
+                this.$store.dispatch('personAbout/addMsg')
+            }
+        },
+```
+
+
+
+// 将index.js 中的模块分割为单个文件 , 并且保留，在 index.js 中引入 
+
+`count.js` 
+
+```js
+// Count 组件相关的数据对象 
+export default { // export default 
+    namespaced: true,
+	...
+}
+```
+
+// `person.js`
+
+```js
+// person组件相关的数据 
+import axios from 'axios';
+import { nanoid } from 'nanoid';
+export default {
+    namespaced: true,
+	...
+}
+```
+
+
+
+
+
+
+
+
+
+
+
+#### Vuex模块化 + 命名空间总结
+
+1. 目的： 让代码更好维护， 让数据分类更加明确 
+
+2. 修改 ： `store.js`
+
+   ```js
+   const counAbout = {
+       namespaced: true, // 开启命名空间 
+       state: {},
+       actions: {},
+       mutations: {},
+       getters: {}
+   }
+   
+   const personAbout = {
+       namespaced: true, // 开启命名空间 
+       state: {},
+       actions: {},
+       mutations: {},
+       getters: {}
+   }
+   
+   export default new Vuex.Store({
+       modules: {
+           counAbout,
+           personAbout
+       }
+   })
+   ```
+
+3. 开启命名空间后， 组件中读取 state 数据 
+
+   ```js
+   // 方式一 
+   this.$store.state.personAbout.personList
+   // 方式二 使用了 mapState模块 
+   ...mapState('countAbout',['sum','name','age'])
+   ```
+
+4. 开启命名空间后， 组件中读取 getter数据 
+
+   ```js
+   // 方式一 
+   this.$store.getter['personAbout/personList']
+   // 方式二 
+   ...mapGetter('countAbout',['bigSum'])
+   ```
+
+5. 开启命名空间后， 组件中调用 dispatch  
+
+   ```js
+   // 方式一 
+   this.$store.dispatch('personAbout/AddWang',personObj)  // 提交数据给 actions
+   // 方式二 
+   ...mapActions('countAbout',{'incrementOdd':"incrementOdd"}), 
+   ```
+
+6. 开启命名空间后， 组件中调用 commit
+
+   ```js
+   //方式一 
+   this.$store.commit('personAbout/Add_Person',personObj)  // 提交数据给 mutations
+   //方式二 
+   ...mapMutations('countAbout',{"DECREMENT":'DECREMENT'}), 
+   ```
+
 
 
 
