@@ -170,6 +170,8 @@ https://cli.vuejs.org/zh/config/#vue-config-js
 
 例如修改`main.js `入口文件 
 
+`vue.config.js`中
+
 ```js
 module.exports = {
   pages: {
@@ -1526,6 +1528,14 @@ beforeDestroy() {
       mounted() { // 生命周期钩子
           this.$bus.$on('自定义事件', this.demo);  // 回调函数
       }
+      
+      
+      // 或者将回调直接写在 mounted()中
+      mounted() { // 生命周期钩子
+          this.$bus.$on('自定义事件',(name) => {
+              this.name = name
+          });
+      }
       ```
 
    2. 提供数据一方 ：  
@@ -1623,7 +1633,7 @@ methods: {
 
 ##  `$nextTick()`
 
-
+`nextTick` 所指定的回调会在DOM节点更新完毕后执行 , 所以在DOM数据发生改变后使用 `nextTick()`获取input框的焦点
 
 ```js
 // 使用 Vue中的  $nextTick  获取焦点 
@@ -1653,7 +1663,43 @@ this.$nextTick(function () {
 
 
 
+
+
+
+
 ## Vue封装的过度与动画 
+
+
+
+```vue
+<style scoped>
+    h1 {
+        background-color: orange;
+    }
+    /* 通过过度方式实现动画 */
+    /* 进入的起点， 离开的终点 */
+    .v-enter,
+    .v-leave-to {
+        transform: translateX(-100%);
+    }
+
+    .v-enter-active, 
+    .v-leave-active  {
+        /* 动画时间 */
+        transition: 0.5 linear;
+    }
+
+    .v-enter-to, 
+    .v-leave  {
+        transform: translateX(0);
+    }
+
+</style>
+```
+
+
+
+
 
 
 
@@ -1781,6 +1827,20 @@ module.exports = {
 分析 ：可分为两个单个组件 ：  Search    List   
 
 search 发送请求获取数据，  List负责接收数据，数据渲染  ， 涉及到， 两个单个组件中的数据间通信和 axios 请求 
+
+
+
+写一个  axios请求 
+
+```js
+import axios from 'axios';
+
+// 使用
+axios.get(`url ${参数}`).then(
+	response => {},  // 请求成功
+    error => {}   // 请求失败
+)
+```
 
 
 
@@ -2149,6 +2209,8 @@ methods: {
 
 ![vuex](https://vuex.vuejs.org/vuex.png)
 
+代写 ：  xxxxxxxxx
+
 
 
 
@@ -2295,7 +2357,7 @@ methods: {
 
    ```vue
    <script>
-           methods: {
+       methods: {
                // 使用 this.$store.despatch() 使用方法 increment，并把 this.n 传递给 actions 中的increment  , 或者直接使用 commit 越过 actions，直接把数据给 mutations
                increment() {
                    this.$store.commit('INCREMENT',this.n)
@@ -2422,7 +2484,76 @@ methods: {
 
 
 
-#### 
+####  mapActions 和 mapMutations
+
+`mapActions`和 `mapMutations` 一般用于在 `methods` 方法中使用
+
+没有使用 map方法前 
+
+```js
+methods: {
+            increment() {
+                this.$store.commit('INCREMENT',this.n)
+            },
+            decrement(){
+                this.$store.commit('DECREMENT',this.n)
+            },
+            incrementOdd() {
+                this.$store.dispatch('incrementOdd',this.n)
+            },
+            incrementWite() {
+                this.$store.dispatch('incrementWite',this.n)
+            }
+        },
+```
+
+
+
+当`$store `使用 commit时， 也可使用 Vuex提供的map 进行简写因为commit是和 Mutations 进行对话的，使用 mapMutations() 能够简写` $store.commit() `
+
+
+
+
+
+```js
+methods: {
+        // 当$store 使用 commit时， 也可使用 Vuex提供的map 进行简写 
+        // 因为commit是和 Mutations 进行对话的，使用 mapMutations() 能够简写 $store.commit() 
+
+        // 使用 mapMutations() 传参必须要写在模板中， 不然在mutations中的INCREMENT收到的是 evtent ，而不是参数
+    	// ...mapMutations({'INCREMENT':'INCREMENT'}),  // 对象式 
+
+    	...mapMutations(['INCREMENT']),  // 数组式 
+
+        // 同理 
+        // ...mapMutations({'decrement':'DECREMENT'}),  // 对象式
+        // key 要和模板中的事件一致， value 需要和 mutations 中的方法一致
+
+        ...mapMutations(['DECREMENT']),  // 模板中使用的方法名要一致才能使用数组式简写
+
+
+        // *************************************** **
+        // dispatch 使用  mapActions() 
+
+        // 使用 mapActions() 对使用 $store.dispatch() 方法进行简写 , 
+        // 使用方法和上边一样, mapActions()直接跟actions进行对话
+
+        // ...mapActions({'incrementOdd':'incrementOdd'}), // 对象式
+        ...mapActions(['incrementOdd']),  // 数组式 
+
+        // ...mapActions({'incrementWite':'incrementWite'}),
+        ...mapActions(['incrementWite']),  // 数组式
+},
+```
+
+使用 mapMutations()  和 mapActions() 传参必须要写在模板中， 不然在mutations中的INCREMENT收到的是 evtent ，而不是参数
+
+```html
+<button  @click='INCREMENT(n)'>+</button>
+<button @click='DECREMENT(n)'>-</button>
+<button @click='incrementOdd(n)'>当前求和为奇数再加</button>
+<button @click='incrementWite(n)'>等一等再加</button>
+```
 
 
 
@@ -2430,7 +2561,9 @@ methods: {
 
 
 
-#### 总结 
+
+
+#### 总结
 
 1. `mapState` 方法 ： 用于帮助我们映射 `state` 中的数据为计算属性 
 
@@ -2458,7 +2591,40 @@ methods: {
    } 
    ```
 
-3. `mapActions` 方法 : 
+3. `mapActions` 方法 :  用于帮助我们生成与 `actions` 对话的方法， 即： 包含 `$store.dispatch(xxx)` 的函数
+
+   ```js
+   methods: {
+       ...mapActions({'incrementWite':'incrementWite'}),  // 对象式
+       ...mapActions(['incrementWite']),  // 数组式
+   }
+   ```
+
+   
+
+4. `mapMutations` 方法 ： 用于帮助我们生成与 `mutations` 对话的方法， 即： 包含 `$store.commit(xxx)` 的函数
+
+   ```js
+   methods: {
+      	...mapMutations({'INCREMENT':'INCREMENT'}),  // 对象式 
+   
+       ...mapMutations(['INCREMENT']),  // 数组式 
+   }
+   ```
+
+备注： mapActions 与 mapMutations 使用时， 若需要传递参数需要： 在模板中绑定事件时传递好参数，否则参数是事件对象 
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

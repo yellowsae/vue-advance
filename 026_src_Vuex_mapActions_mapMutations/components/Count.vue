@@ -82,6 +82,10 @@
             ...mapMutations(['INCREMENT']),  // 数组式 
             
 
+            // decrement(){
+            //     this.$store.commit('DECREMENT',this.n)
+            // },
+
             // 同理 
             // ...mapMutations({'decrement':'DECREMENT'}),  // 对象式
              // key 要和模板中的事件一致， value 需要和 mutations 中的方法一致

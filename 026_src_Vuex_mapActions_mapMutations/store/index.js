@@ -57,8 +57,7 @@ const mutations = {
 const state = {
     sum: 0,
     name: 'Yellowsea',
-    age: 20,
-    personList: [{ id: '001', name: '张三' }]
+    age: 20
 }
 
 
