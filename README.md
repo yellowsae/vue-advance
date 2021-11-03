@@ -3162,3 +3162,317 @@ SPA应用 ：
 
 
 
+### 几个注意点
+
+1. 路由组件通常存放在 `pages` 文件夹 ， 一般组件放在 `components` 文件夹
+2. 通过切换， "隐藏" 了路由组件， 默认是销毁的， 需要的时候再去挂载。 
+3. 每个路由组件都有自己的`$route`属性， 里面存储着自己的路由信息
+4. 整个应用只有一个`router`  ， 可以通过组件的 `$router` 属性获取到 
+
+
+
+<img src="https://gitee.com/yunhai0644/imghub/raw/master/20211103135755.png" alt="image-20211103135706895" style="zoom:50%;" />
+
+
+
+
+
+
+
+### 多级路由（嵌套路由）
+
+1. 路由配置项规则 ： 使用 `children` 配置项 
+
+   ```js
+   routes: [
+       	{ // 匹配的路径   注意这里 ： routes 而不是 routers 
+               path: '/about',
+               component: About
+           },
+       
+           {
+               path: '/home',
+               component: Home,
+               
+               // 注意 children 下的 path 不能使用  "/"  "/news" , 因为路由器已经默认加上了
+               children: [{  // 通过 chidren 配置子级路由 
+                       path: 'news',  // 注意此处一定不要写成 `/news`  
+                       component: News
+                   },
+                   {
+                       path: 'message',  // 注意此处一定不要写成 `/message`  
+                       component: Message
+                   }
+               ]
+           }
+       ]
+   ```
+
+2. 跳转（要写完整路径 ）
+
+   ```html
+   <!-- 嵌套路由注意路径： to="/home/news" ，  必须要是 /父路径/子路径 -->
+   <router-link to="/home/news">News </router-link>
+   ```
+
+
+
+
+
+
+
+### 路由的 `query` 参数
+
+
+
+查看路由接收的参数 
+
+```vue
+<template>
+    <ul>
+        <li>消息编号： {{$route.query.id}}</li>
+        <li>消息标题: {{$route.query.title}}</li>
+    </ul>
+</template>
+
+<script>
+    export default {
+    name:'Detail',
+    // 接收路由参数 
+    // 查看传递过来的参数 
+    mounted() {
+        console.log(this.$route)
+    }
+}
+</script>
+
+```
+
+<img src="https://gitee.com/yunhai0644/imghub/raw/master/20211103150657.png" alt="image-20211103145221831" style="zoom: 50%;" />
+
+
+
+
+
+参数的写法 ：  `?key=value&key=value`  
+
+使用方法： 
+
+1. 传递参数  
+
+   ```html
+     <!-- 路由传参的第一种写法:  :to=" `ES6模板语法` " -->
+   <router-link :to="`/home/message/detail?id=${m.id}&title=${m.title}`">{{m.title}}</router-link>
+   
+   
+   <!-- 路由传参的第二种写法：对象式写法， 使用 :to= "{}" 使用两个参数  path 和 query -->
+   <router-link :to="{
+                         path: '/home/message/detail',
+                         query: {
+                             id: m.id,
+                             title: m.title
+                         }
+                     }"
+                >{{m.title}}
+   </router-link> 
+   ```
+
+2. 接收参数 ： 
+
+   ```js
+   $route.query.id
+   $route.query.title
+   ```
+
+
+
+
+
+
+### 命名路由
+
+作用简化路径
+
+// 路由文件 
+
+```js
+    routes: [{ 
+            name: 'guanyu', // 命名路由 ，直接加上 name 参数就行 
+            path: '/about',
+            component: About
+        },
+        {
+            path: '/home',
+            component: Home,
+            children: [{
+                    path: 'news',
+                    component: News
+                },
+                {
+                    path: 'message',
+                    component: Message,
+                    children: [{
+                        name: 'xiangqing', // 命名路由 
+                        path: 'detail',
+                        component: Detail
+                    }]
+                }
+            ]
+        }
+    ]
+```
+
+//使用**命名路由**  
+
+```html
+<!-- 使用对象式的简化 路径写法 -->
+<router-link :to="{
+	// path: '/home/message/detail',
+    name: 'xiangqing',  // 使用命名路由 简化路径, 直接写 name 和 路由文件种的一致 
+        query: {
+            id: m.id,
+                title: m.title
+        }
+    }">
+{{m.title}}
+</router-link> 
+
+<!-- 使用 to 时，也是写成对象式   :to="{name:'guanyu'}"  -->
+<router-link :to="{name:'guanyu'}">About</router-link>
+
+
+```
+
+
+
+
+
+
+
+
+
+### 路由的 `params` 参数
+
+
+
+`params`  ： 传递的参数在url后面，而且不是和`query`的 `?key=value` ，是 `http://localhost:8080/#/home/message/detail/003/消息003` 这样 
+
+
+
+在`this`种的 `params`
+
+<img src="https://gitee.com/yunhai0644/imghub/raw/master/20211103162704.png" alt="image-20211103162224583" style="zoom:50%;" />
+
+
+
+
+
+1. 配置路由， 使用占位符接收参数
+
+   ```js
+   {
+       path: 'message',
+           component: Message,
+               children: [{
+                   name: 'xiangqing', // 命名路由 
+                   path: 'detail/:id/:title', //使用占位符声明接收 params参数 
+                   component: Detail
+               }]
+   }
+   ```
+
+2. 传递`params`参数 
+
+   ```html
+   <!-- 第一种写法-->
+   <router-link :to="`/home/message/detail/${m.id}/${m.title}`">{{m.title}}</router-link>
+   
+   <!-- 第二种写法-->
+   <router-link 
+        :to="{
+              name: 'xiangqing',  // 使用命名路由 简化路径
+              params: {   // 将接收数据的参数 写为 params 
+                   id: m.id,
+                   title: m.title
+              }
+       }">
+       {{m.title}}
+   </router-link> 
+   ```
+
+3. > 备注： 特别注意， 路由携带`params` 参数时，若使用to的对象式写法， 则不能使用`path` 配置项， 必须使用 `name` 配置
+
+4. 接收参数 
+
+   ```js
+   $route.params.id
+   $route.params.title
+   ```
+
+
+
+
+
+
+
+
+
+### 路由的 `props` 配置
+
+作用 ： 让路由组件能够更方便的接收到参数 
+
+// 路由配置  `index.js`
+
+```js
+{
+    path: 'message',
+        component: Message,
+            children: [{
+                name: 'xiangqing', // 命名路由 
+                path: 'detail/:id/:title', //使用占位符声明接收 params参数 
+                component: Detail,
+
+                // 使用路由的 props 参数
+                //第一种写法： props值为对象，该对象中所有的key-value的组合最终都会通过 props 传给 Detail组件 ，劣： a 和 b 的数据都是写死的 
+                // props: { a: '000', b: 'hello' },
+                
+                
+                // 第二种写法: 布尔值写法， 若 props: true, 则把路由收到的所有 params 参数通过 props 传给 Detail组件 
+                // 
+                 // props: true,
+                
+
+                // 第三种写法: 函数式，使用路由的回调函数收到的 $route, 使用 $route 根据返回数据定义 props 接收的数据，可以用在 params, 和 query 
+                props($route) {
+                    return {
+                        id: $route.query.id,
+                        title: $route.query.title
+                    }
+                }
+            }]
+}
+```
+
+一般使用 第三种方法 函数式写法用得多 
+
+
+
+//路由组件配置 接收数据 `props`
+
+```js
+// 接收路由参数 
+// 查看传递过来的参数
+
+// props: ['a', 'b'],  // 接收路由传递的参数  方法一 
+// props: ['id', "title"], // 方法二 
+props: ['id', "title"]
+```
+
+
+
+
+
+
+
+
+
