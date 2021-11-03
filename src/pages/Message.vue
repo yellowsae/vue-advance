@@ -6,14 +6,16 @@
                 <!-- <router-link :to="`/home/message/detail/${m.id}/${m.title}`">{{m.title}}</router-link>&nbsp;&nbsp; -->
                 
                 <!-- 路由传参的第二种写法：对象式写法， 使用 :to= "{}" 使用两个参数  path 和 query -->
-                <router-link :to="{
-                    // path: '/home/message/detail',
-                    name: 'xiangqing',  // 使用命名路由 简化路径
-                    query: {
-                        id: m.id,
-                        title: m.title
-                    }
-                }">
+                <router-link
+                    replace 
+                    :to="{
+                        // path: '/home/message/detail',
+                        name: 'xiangqing',  // 使用命名路由 简化路径
+                        query: {
+                            id: m.id,
+                            title: m.title
+                        }
+                    }">
                 {{m.title}}
                 </router-link> 
             </li>
