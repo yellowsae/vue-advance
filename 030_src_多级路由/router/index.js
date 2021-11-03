@@ -6,7 +6,7 @@ import About from '../pages/About'
 import Home from '../pages/Home'
 import News from '../pages/News'
 import Message from '../pages/Message'
-import Detail from '../pages/Detail'
+
 
 // 创建一个路由器， 并暴露出去 
 export default new VueRouter({
@@ -27,11 +27,7 @@ export default new VueRouter({
                 },
                 {
                     path: 'message',
-                    component: Message,
-                    children: [{
-                        path: 'detail',
-                        component: Detail
-                    }]
+                    component: Message
                 }
             ]
         }
