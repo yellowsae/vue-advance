@@ -3165,7 +3165,7 @@ SPA应用 ：
 ### 几个注意点
 
 1. 路由组件通常存放在 `pages` 文件夹 ， 一般组件放在 `components` 文件夹
-2. 通过切换， "隐藏" 了路由组件， 默认是销毁的， 需要的时候再去挂载。 
+2. 通过切换， "隐藏" 了 **路由组件**， 默认是销毁的， 需要的时候再去挂载。 
 3. 每个路由组件都有自己的`$route`属性， 里面存储着自己的路由信息
 4. 整个应用只有一个`router`  ， 可以通过组件的 `$router` 属性获取到 
 
@@ -3223,6 +3223,8 @@ SPA应用 ：
 
 ### 路由的 `query` 参数
 
+参数的写法 ：  `?key=value&key=value`  
+
 
 
 查看路由接收的参数 
@@ -3254,7 +3256,7 @@ SPA应用 ：
 
 
 
-参数的写法 ：  `?key=value&key=value`  
+
 
 使用方法： 
 
@@ -3288,10 +3290,9 @@ SPA应用 ：
 
 
 
-
 ### 命名路由
 
-作用简化路径
+作用简化路径，只负责写定义时路径就行
 
 // 路由文件 
 
@@ -3355,7 +3356,7 @@ SPA应用 ：
 
 
 
-`params`  ： 传递的参数在url后面，而且不是和`query`的 `?key=value` ，是 `http://localhost:8080/#/home/message/detail/003/消息003` 这样 
+`params`  ： 传递的参数在url后面，而且不是和`query`的 `?key=value` ，是 `http://localhost:8080/#/home/message/detail/003/消息003` 这样 ， 跟在路径后面
 
 
 
@@ -3429,7 +3430,9 @@ SPA应用 ：
         component: Message,
             children: [{
                 name: 'xiangqing', // 命名路由 
-                path: 'detail/:id/:title', //使用占位符声明接收 params参数 
+                // path: 'detail/:id/:title', //使用占位符声明接收 params参数， 只能由于 params 
+                
+                path: 'detail',  // 在定义 query 时使用 
                 component: Detail,
 
                 // 使用路由的 props 参数
@@ -3457,7 +3460,37 @@ SPA应用 ：
 
 
 
-//路由组件配置 接收数据 `props`
+在`message.vue` 中 
+
+```vue
+<!-- 路由传参的第一种写法:  :to=" `ES6模板语法` " -->
+
+<!-- <router-link :to="`/home/message/detail/${m.id}/${m.title}`">{{m.title}}</router-link>&nbsp;&nbsp; -->
+
+<!-- 路由传参的第二种写法：对象式写法， 使用 :to= "{}" 使用两个参数  path 和 query -->
+<router-link
+             replace 
+             :to="{
+                  // path: '/home/message/detail',   // 保留完整的路径 
+                  name: 'xiangqing',  // 使用命名路由 简化路径
+                  query: {			// 使用 query时用query ，使用 
+                  id: m.id,
+                  title: m.title
+                  }
+                  }">
+    {{m.title}}
+</router-link> 
+```
+
+
+
+
+
+
+
+//路由组件配置 接收数据 `props`   
+
+// `Deatil.vue`
 
 ```js
 // 接收路由参数 
@@ -3479,6 +3512,246 @@ props: ['id', "title"]
 1. 作用： 控制路由跳转时操作浏览器历史记录的模式 
 2. 浏览器历史记录有两种写入方式： 分别为 `push` 和 `replace` ,   `push`是追加历史记录， `replace` 是替换当前记录， 路由跳转的时候默认为 `push` 
 3. 如何开启`replace` 模式 ： `<router-link  replace  ...> News </router-link>`
+
+
+
+
+
+
+
+
+
+### 编程式路由导航
+
+因为使用 `<router-link>` 最终都会转为  `<a>` 标签 ， 在开发过程中不仅仅是 `<a>`标签能够跳转，比如使用`<button>` 时，再使用`<router-link>` 就不能实现 
+
+
+
+解决方法 ： 在 `$router` 路由器， 不是 `$route` 路由， 身上具有API能够实现页面的前进后退，自定义跳转功能
+
+查看 路由器 `$router` 
+
+<img src="https://gitee.com/yunhai0644/imghub/raw/master/20211104101926.png" alt="image-20211104101911759" style="zoom:50%;" />
+
+路由器API关于路由跳转的API 
+
+- `go`  :  连续跳转到路由哪里，接收参数 `number`类型 ，  比如前进几步， 后退几步  1, -1 
+- `push`  :  正常的访问，不会替换掉上一条路由路径，以追加的方式添加路由 
+- `replace`  : 以替换上一条路由路径方式访问路由
+- `forward` : 路由向前进一步 (浏览器的向前向后)
+- `back` :   路由向后退一步  (浏览器的向前向后)
+
+
+
+
+
+它们接收参数的方法也是和 `:to={''}` 接收参数是一样的 
+
+```js
+    methods: {
+        pushShow(m) {
+            // console.log(this.$router)
+            this.$router.push({   // 使用 路由的追加方式添加路由， $router.push({})
+                name: 'xiangqing',  
+                query: {
+                    id: m.id,
+                    title: m.title
+                }
+            })
+
+        },
+
+        replaceShow(m) {
+            this.$router.replace({   // // 使用 路由的 替换方式添加路由， $router.push({})
+                name: 'xiangqing',  
+                query: {
+                    id: m.id,
+                    title: m.title
+                }
+            })
+        }
+}
+```
+
+
+
+实现功能 
+
+<img src="https://gitee.com/yunhai0644/imghub/raw/master/20211104103834.png" alt="image-20211104103827338" style="zoom:50%;" />
+
+
+
+
+
+**小结**
+
+1. 不借助 `<router-link>` 实现路由跳转， 让路由跳转更加灵活 
+
+2. 具体编码 
+
+   ```js
+       methods: {
+           pushShow(m) {
+               // console.log(this.$router)
+               this.$router.push({   // 使用 路由的追加方式添加路由， $router.push({})
+                   name: 'xiangqing',  
+                   query: {
+                       id: m.id,
+                       title: m.title
+                   }
+               })
+   
+           },
+           replaceShow(m) {
+               this.$router.replace({   // // 使用 路由的 替换方式添加路由， $router.push({})
+                   name: 'xiangqing',  
+                   query: {
+                       id: m.id,
+                       title: m.title
+                   }
+               })
+           }
+   }
+   ```
+
+   
+
+
+
+
+
+
+
+### 缓存路由组件
+
+`<keep-alive include='News'>`  
+
+-  `<keep-alive>`  : 保持状态 
+-  `include`  :  参数写组件名， 保持那个组件的活跃状态 
+
+
+
+在需要显示组件中写具有 `<router-view>`
+
+// `Home.vue` 
+
+```vue
+<!-- 使用 keep-alive 标签让组件保持活跃状态 -->
+<keep-alive include='News'>    
+    <!-- 
+		include='News'   缓存一个组件 
+		:include=['News',"Message"]    缓存多个组件 
+		不写 include  缓存所有组件 
+	-->
+    
+    <router-view></router-view>
+</keep-alive>
+```
+
+
+
+**小结**
+
+1. 作用： 让不展示的路由组件保持挂载状态， 不被销毁 
+
+2. 具体编码 ：
+
+   ```vue
+   <keep-alive  include='News'>
+   	<router-view></router-view>
+   </keep-alive>
+   ```
+
+   
+
+
+
+
+
+
+
+### 引入两个声明周期钩子 
+
+出现问题 ：   在 News 组件中， 使用定时器和input 组件，并且在上层组件使用 `<keep-alive>` ，当切走 News组件时候，定时器一直在开启着没有关闭 
+
+<img src="https://gitee.com/yunhai0644/imghub/raw/master/20211104112250.png" alt="image-20211104112245888" style="zoom:50%;" />
+
+
+
+//`news.vue`
+
+```js
+mounted() {
+    this.timer =  setInterval(() => {
+        console.log('@')
+        this.opacity -= 0.01
+        if (this.opacity <= 0 ) {
+            this.opacity = 1 
+        }
+    }, 16)
+},
+    beforeDestroy() {
+        console.log('News组件即将被销毁了')
+        clearInterval(this.timer);
+    },
+```
+
+
+
+引出两个声明周期钩子， 路由组件常用  :  `activated`  和 `deactivated`  钩子 
+
+`activated` 当组件被激活时候 触发函数  
+
+`deactivated` 当组件失活时候触发函数 
+
+
+
+```js
+        // 当组件被激活状态 
+        activated() {
+            // console.log('News组件被激活了')
+            this.timer =  setInterval(() => {
+                console.log('@')
+                this.opacity -= 0.01
+                if (this.opacity <= 0 ) {
+                    this.opacity = 1 
+                }
+            }, 16)
+        },  
+
+        // 当前组件失活状态 
+        deactivated() {
+            console.log('News组件失活了')
+            clearInterval(this.timer);
+        },
+```
+
+
+
+> 生命周期钩子： 在Vue的生命周期钩子图中体现出的8个钩子， 在图中没有的钩子还有三个 ,  `activated`  `deactivated`   `$nextTick`  
+
+
+
+**小结**  : 两个生命周期钩子 
+
+1. 作用 ： 路由组件所独有的两个钩子， 用于捕获路由激活组件的激活状态 。 
+2. 具体名字 ：
+   1. `activated`  : 路由组件被激活时触发 
+   2. `deactivated` : 路由组件失活时触发 
+
+
+
+
+
+
+
+
+
+
+
+### 全局前置-路由守卫
+
+
 
 
 

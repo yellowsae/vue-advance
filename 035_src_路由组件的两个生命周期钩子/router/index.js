@@ -8,7 +8,7 @@ import Message from '../pages/Message'
 import Detail from '../pages/Detail'
 
 // 创建一个路由器， 并暴露出去 
-const router = new VueRouter({
+export default new VueRouter({
     // 路由的对象
     routes: [{ // 匹配的路径   注意这里 ： routes 而不是 routers 
             name: 'guanyu', // 命名路由 
@@ -16,19 +16,16 @@ const router = new VueRouter({
             component: About
         },
         {
-            name: "zhuye",
             path: '/home',
             component: Home,
 
             //使用嵌套路由 在一级路由下， 使用 children 配置项
             // 注意 children 下的 path 不能使用  "/"  "/news" , 因为路由器已经默认加上了
             children: [{
-                    name: 'xinwen',
                     path: 'news',
                     component: News
                 },
                 {
-                    name: 'xinxi',
                     path: 'message',
                     component: Message,
                     children: [{
@@ -57,29 +54,3 @@ const router = new VueRouter({
         }
     ]
 })
-
-router.beforeEach((to, from, next) => { // 收到的参数 
-    /**
-     * to : 要去哪里 url , 去哪里  
-     * from ： 当前的url  来自哪里 
-     * next:  使用 next()  执行要跳转的 url 
-     */
-    console.log('这是to : ', to)
-    console.log('这是 from ', from)
-
-    // 使用逻辑判断 是否放行  url
-
-    // if (to.path === '/home/news' || to.path === '/home/message') {  // 写to 去到的路径， 也可以写name 
-    if (to.name === 'xinwen' || to.name === 'xinxi') { // 写to 去到的路径， 也可以写name 
-        if (localStorage.getItem('user') === 'yellowsae') {
-            next()
-        } else {
-            alert('请登录')
-        }
-    } else {
-        next()
-    }
-})
-
-
-export default router;
