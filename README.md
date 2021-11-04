@@ -3753,6 +3753,249 @@ mounted() {
 
 
 
+#### **全局路由守卫**
+
+
+
+**全局路由守卫前置**
+
+`beforeEach((to, from, next)`
+
+初始化时执行、 每次路由切换前执行 ，  控制访问地址权限 
+
+定义规则
+
+ * to : 要去哪里 url , 去哪里  
+ * from ： 当前的url  来自哪里 
+ * next:  使用 next()  执行要跳转的 url 
+
+```js
+router.beforeEach((to, from, next) => { // 收到的参数 
+    /**
+     * to : 要去哪里 url , 去哪里  
+     * from ： 当前的url  来自哪里 
+     * next:  使用 next()  执行要跳转的 url 
+     */
+    // console.log('这是to : ', to)
+    // console.log('这是 from ', from)
+
+    // 使用逻辑判断 是否放行  url
+    // if (to.path === '/home/news' || to.path === '/home/message') {  // 写to 去到的路径， 也可以写name 
+    if (to.name === 'xinwen' || to.name === 'xinxi') { // 写to 去到的路径， 也可以写name 
+        if (localStorage.getItem('user') === 'yellowsae') {
+            next()
+        } else {
+            alert('请登录')
+        }
+    } else {
+        next()
+    }
+})
+```
+
+问题
+
+```js
+if (to.name === 'xinwen' || to.name === 'xinxi') 
+```
+
+因为这样判断不好，可以在路由配置中自定义信息，然后进行判断。  在路由中定义自定义信息是 **路由元信息**  `meta`
+
+
+
+**学习路由元信息** ：  元信息， 也就是开发过程中自定义的信息  
+
+定义元信息 ： 在路由对象中配置 `meta: {isAuth: true}`
+
+使用 :  `to.meta.isAuth`
+
+<img src="https://gitee.com/yunhai0644/imghub/raw/master/20211104225944.png" alt="image-20211104225935743" style="zoom:67%;" />
+
+路由中使用 
+
+```js
+if (to.meta.isAuth) { // 直接判断 isAuth ，能简写很多
+    if (localStorage.getItem('user') === 'yellowsae') {
+        next()
+    } else {
+        alert('请登录')
+    }
+} else {
+    next()
+}  
+```
+
+
+
+
+
+**全局路由守卫后置**
+
+能够获取到路由的 `to | from` 的信息 
+
+`afterEach(to,from)`    //没有 next() ， 因为它是跳转后再执行的 
+
+```js
+router.afterEach((to, from) => { //  每次路由切换之后执行
+    // 作用 , 可以在访问后执行一些DOM操作 , 比如修改标题 
+    // console.log(to, from)
+    if (to.meta.value) {
+        document.title = to.meta.value  // 修改网页标题
+    } else {
+        document.title = 'vue-test'
+    }
+})
+```
+
+
+
+
+
+
+
+#### 独享路由守卫 
+
+就是单独路由的规则 ，  使用 api ，  `beforEnter(to,from,next)`  ,   直接写在**路由规则里**边 
+
+独享路由只有` beforEnter(to,from,next)` 没有 `afterEnter(to,from,next)`
+
+定义 
+
+```js
+				{
+                    name: 'xinwen',
+                    path: 'news',
+                    component: News,
+                    meta: {
+                        isAuth: true,
+                        value: '新闻'
+                    },
+                    beforeEnter(to, from, next) {   //使用独享路由守卫 
+                        if (to.meta.isAuth) { //使用路由元信息
+                            if (localStorage.getItem('user') === 'yellowsae') {
+                                next()
+                            } else {
+                                alert('请登录')
+                            }
+                        } else {
+                            next()
+                        }
+                    },
+                },
+```
+
+
+
+#### 组件内路由守卫 
+
+分为 
+
+进入组件时守卫 `beforRouteEnter(to,from,next)` 
+
+离开组件时路由守卫 ：  `beforeRouteLeave(to,from,next)`
+
+使用 
+
+`About.vue` 
+
+```js
+    // 组件内路由守卫 
+    // 在进入组件时候调用 
+    beforeRouteEnter (to, from, next) {
+        if (to.meta.isAuth) { //使用路由元信息
+            if (localStorage.getItem('user') === 'yellowsae') {
+                next()
+            } else {
+                alert('请登录')
+            }
+        } else {
+            next()
+        }
+    },
+
+    // 在离开当前组件时候调用 
+    beforeRouteLeave (to, from, next) {
+        console.log('About组件路由要离开了')
+        next()
+    }
+```
+
+
+
+
+
+
+
+**小结**
+
+1. 作用 ： 对路由进行权限的控制 
+
+2. 分类 ： 全局守卫 ， 独享守卫 ，组件内守卫 
+
+3. 全局守卫 ：
+
+   ```js
+   // 全局前置守卫 ： 初始化时执行、 每次路由切换前执行 
+   router.beforeEach((to, from, next) => { // 收到的参数 
+       // 使用逻辑判断 是否放行  url
+       // if (to.path === '/home/news' || to.path === '/home/message') {  // 写to 去到的路径， 也可以写name 
+       // if (to.name === 'xinwen' || to.name === 'xinxi')
+       if (to.meta.isAuth) { 
+           if (localStorage.getItem('user') === 'yellowsae') {
+               next()
+           } else {
+               alert('请登录')
+           }
+       } else {
+           next()
+       }
+   })
+   
+   // 全局路由守卫， 初始化时执行、 每次路由切换之后执行 
+   router.afterEach((to, from) => { //  每次路由切换之后执行
+       // 作用 , 可以在访问后执行一些DOM操作 , 比如修改标题 
+       // console.log(to, from)
+       if (to.meta.value) {
+           document.title = to.meta.value // 修改网页标题
+       } else {
+           document.title = 'vue-test'
+       }
+   })
+   ```
+
+4. 独享路由守卫
+
+   ```js
+   beforeEnter(to, from, next) {   //写在路由配置里 
+       if (to.meta.isAuth) { //使用路由元信息
+           if (localStorage.getItem('user') === 'yellowsae') {
+               next()
+           } else {
+               alert('请登录')
+           }
+       } else {
+           next()
+       }
+   },
+   
+   ```
+
+5. 组件内路由守卫 
+
+   ```js
+   beforeRouteEnter (to, from, next)   //  在进入组件时候调用 
+   beforeRouteLeave (to, from, next)  // 在离开当前组件时候调用
+   
+   ```
+
+   
+
+
+
+
+
+
+
 
 
 
