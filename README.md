@@ -4040,3 +4040,156 @@ const router = new VueRouter({
 
 
 
+
+
+
+
+## Vue使用ElementUI组件库
+
+前端常用的UI组件库 
+
+移动端 ： 
+
+- NutUI : https://nutui.jd.com/#/
+- mintUI : https://mint-ui.github.io/#!/zh-cn
+- cube : https://didi.github.io/cube-ui/#/zh-CN/docs/quick-start
+- VantUI : https://youzan.github.io/vant/#/zh-CN/
+
+
+
+
+
+PC端 ： 
+
+- ElementUI ：  https://element.eleme.cn/#/zh-CN
+- AntDesign : https://antdv.com/docs/vue/introduce-cn/
+- View UI  : https://www.iviewui.com/docs/introduce
+
+
+
+
+
+### 使用组件库
+
+安装： `npm i element-ui`
+
+引入： 完整引入 和 按需引入 
+
+完整引入全部组件库，体积大占内存多， 按需引入使用那个组件引入就行，方便，体积小 
+
+
+
+
+
+//`main.js`
+
+```js
+// 使用ElementUI 
+// 完整引入 
+import ElementUI from 'element-ui';
+import 'element-ui/lib/theme-chalk/index.css';
+
+// 使用 
+Vue.use(ElementUI)
+```
+
+//在组件中使用 
+
+`App.vue`
+
+```vue
+<template> 
+		<el-row>
+            <el-button>默认按钮</el-button>
+            <el-button type="primary">主要按钮</el-button>
+            <el-button type="success">成功按钮</el-button>
+            <el-button type="info">信息按钮</el-button>
+            <el-button type="warning">警告按钮</el-button>
+            <el-button type="danger">危险按钮</el-button>
+        </el-row>
+</template>
+```
+
+<img src="https://gitee.com/yunhai0644/imghub/raw/master/20211105133143.png" alt="image-20211105133138768" style="zoom:50%;" />
+
+完整版引入出现的体积过大 
+
+<img src="https://gitee.com/yunhai0644/imghub/raw/master/20211105133236.png" alt="image-20211105133230113" style="zoom:50%;" />
+
+
+
+
+
+
+
+按需引入  在ElementUI 中有按需引入的教程 
+
+安装 ： `npm install babel-plugin-component -D`
+
+然后，将`.babelrc` 修改为：(在生成的`.babelrc`  已经改为` babel.config.js`) 了，需要修改配置
+
+`babel.config.js`
+
+```json
+    presets: [
+        '@vue/cli-plugin-babel/preset', 
+        ["@babel/preset-env", { "modules": false }]
+    ],
+    plugins: [
+        [
+            "component",
+            {
+                "libraryName": "element-ui",
+                "styleLibraryName": "theme-chalk"
+            }
+        ]
+    ]
+```
+
+
+
+//`main.js`  
+
+```js
+// 按需引入 
+import { Button, Row, DatePicker } from 'element-ui';
+
+// 注册全局组件 , 不需要引入样式
+// Vue.component(自定义组件名, 需要注册的组件)  
+Vue.component('Hidie-button', Button)
+Vue.component('Hidie-row', Row)
+Vue.component('Hidie-date-picker', DatePicker)
+```
+
+//`App.vue`
+
+```vue
+<template> 
+    <div>
+        <Hidie-row>
+            <Hidie-button>默认按钮</Hidie-button>
+            ...
+        </Hidie-row>
+        <Hidie-row>
+            <Hidie-button type="danger" round>危险按钮</Hidie-button>
+            ...
+        </Hidie-row>
+    </div>
+</template>
+```
+
+按需引入的效果 ， 和全部引入的一致
+
+<img src="../../AppData/Roaming/Typora/typora-user-images/image-20211105140012500.png" alt="image-20211105140012500" style="zoom:50%;" />
+
+占用大小 
+
+<img src="https://gitee.com/yunhai0644/imghub/raw/master/20211105140110.png" alt="image-20211105140103466" style="zoom:67%;" />
+
+
+
+
+
+总结 : 
+
+在使用组件库中， 尽量使用按需引入， 而且不需要背文档，使用到直接查看文档，直接复制粘贴就行
