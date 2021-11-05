@@ -9,6 +9,8 @@ import Detail from '../pages/Detail'
 
 // 创建一个路由器， 并暴露出去 
 const router = new VueRouter({
+    // mode: 'hash', // 默认就是 hash 
+    mode: 'history', // history 工作模式 
     // 路由的对象
     routes: [{ // 匹配的路径   注意这里 ： routes 而不是 routers 
             name: 'guanyu', // 命名路由 

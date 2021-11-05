@@ -3994,6 +3994,46 @@ router.afterEach((to, from) => { //  每次路由切换之后执行
 
 
 
+### 路由器的两种工作模式
+
+定义路由器的工作模式 ： 
+
+`src/router/index.js`
+
+```js
+const router = new VueRouter({
+    mode: 'hash', // 默认就是 hash 
+    // mode: 'history', // history 工作模式 
+})
+```
+
+代码实现 
+
+将前端人员写好的代码进行打包 ：  `npm   run  build ` 
+
+打包后生成了 `dist` 文件 ， 就是前端生成的静态资源文件  
+
+![image-20211105111404457](https://gitee.com/yunhai0644/imghub/raw/master/20211105111416.png)
+
+
+
+发送给后端服务器使用部署上线 
+
+
+
+**小结**
+
+1. 对于一个url来说， 什么是 hash 值 ？   ----  #  及其后面的内容就是hash 值 
+2. hash值不会包含在 HTTP请求中，即 :  hash值不会带给服务器 
+3. hash模式 ：
+   1. 地址中永远带着#号 ， 不美观 
+   2. 若以后将地址通过第三方手机 APP分享链接， 若APP校验严格，则地址会被标记为不合法
+   3. 兼容性好 
+4. history模式 
+   1. 地址干净， 美观
+   2. 兼容性和 hash模式相比略差
+   3. 应用部署上线时需要后端人员的支持，解决刷新页面服务端的404问题
+
 
 
 
