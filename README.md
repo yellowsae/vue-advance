@@ -4180,7 +4180,7 @@ Vue.component('Hidie-date-picker', DatePicker)
 
 按需引入的效果 ， 和全部引入的一致
 
-<img src="../../AppData/Roaming/Typora/typora-user-images/image-20211105140012500.png" alt="image-20211105140012500" style="zoom:50%;" />
+<img src="https://gitee.com/yunhai0644/imghub/raw/master/20211107211050.png" alt="image-20211105140012500" style="zoom:50%;" />
 
 占用大小 
 
